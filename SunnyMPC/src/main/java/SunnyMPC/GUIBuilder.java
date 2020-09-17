@@ -34,17 +34,14 @@ public class GUIBuilder {
 
     private GridBagConstraints gbc;
 
-    public GUIBuilder () {
-        gbc = new GridBagConstraints ();
-        gbc.anchor = GridBagConstraints.FIRST_LINE_START;   
-        gbc.insets = new Insets( hGap, vGap, hGap, vGap ); 
-    }
-
     public void build() {
         // main layout
         JFrame window = new JFrame("Sunny MPC");
         window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        
+        gbc = new GridBagConstraints ();
+        gbc.anchor = GridBagConstraints.FIRST_LINE_START;   
+        gbc.insets = new Insets( hGap, vGap, hGap, vGap ); 
+
         // top row
         JPanel topPanel = new JPanel(); 
         JComboBox<String> serverCombobox = new JComboBox<String>();
@@ -59,15 +56,7 @@ public class GUIBuilder {
         topPanel.add(topBox);
 
         // table
-        String[] columnNames = {"Track #",
-                        "Artist",
-                        "Title",
-                        "Album",
-                        "Year", 
-                        "Format",
-                        "Bitrate",
-                        "Length"
-                    };
+        String[] columnNames = {"Track #", "Artist", "Title", "Album", "Year", "Format", "Bitrate", "Length"};
         Object[][] data = {
             {"Kathy", "Smith",
                 "Snowboarding", 5, false},

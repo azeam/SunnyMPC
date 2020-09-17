@@ -32,13 +32,11 @@ public class UpdateListener implements ActionListener {
         ) {
             String fromServer;
             out.println(cmd);
-            // communicate with server
+            // TODO: fix better
             serverResponse.readLine(); // skip first MPD OK line
             serverResponse.readLine(); // skip second MPD OK line
-            while ((fromServer = serverResponse.readLine()) != null) {
-                if (fromServer.equals("OK")) {
-                    return response;
-                }
+            while ((fromServer = serverResponse.readLine()) != null && !fromServer.equals("OK")) {
+                
                 response.add(fromServer.substring(fromServer.indexOf(" ") + 1));
             }
             socket.close();
