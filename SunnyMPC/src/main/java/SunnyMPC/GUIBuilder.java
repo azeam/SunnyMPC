@@ -1,30 +1,25 @@
 package SunnyMPC;
 
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.Socket;
-import java.net.UnknownHostException;
+import java.awt.Insets;
 import java.util.Comparator;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.ListCellRenderer;
 import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableModel;
 
@@ -34,7 +29,16 @@ import ca.odell.glazedlists.SeparatorList;
 import ca.odell.glazedlists.swing.DefaultEventListModel;
 
 public class GUIBuilder {
-    static PrintWriter out;
+    private final int hGap = 5;
+    private final int vGap = 5;
+
+    private GridBagConstraints gbc;
+
+    public GUIBuilder () {
+        gbc = new GridBagConstraints ();
+        gbc.anchor = GridBagConstraints.FIRST_LINE_START;   
+        gbc.insets = new Insets( hGap, vGap, hGap, vGap ); 
+    }
 
     public void build() {
         // main layout
@@ -91,69 +95,67 @@ public class GUIBuilder {
 
 
         // browseList
-        String[] artistBrowseList = {"apple", "appricot", "acorn", "blueberry", "coconut", "chesnut", "grape"};
+        UpdateListener updateListener = new UpdateListener();
+        List<String> artistList = updateListener.getArtistList();
+        String[] artistBrowseList = artistList.toArray(new String[0]);
+        for (String s: artistBrowseList) {
+            System.out.println(s);
+        }
         EventList<String> rawList = GlazedLists.eventListOf(artistBrowseList);
         SeparatorList<String> separatorList =
-                new SeparatorList(rawList, createComparator(), 0, 1000);
+                new SeparatorList<String>(rawList, createComparator(), 0, 100000);
 
-        JList<String> browseList = new JList(new DefaultEventListModel(separatorList));
+        JList<String> browseList = new JList<String>(new DefaultEventListModel<String>(separatorList));
         browseList.setCellRenderer(createListCellRenderer());
-        JScrollPane scrollPane = new JScrollPane(browseList);
-        scrollPane.setBorder(null);
-
+        JScrollPane browsePane = new JScrollPane(browseList);
+        browsePane.setBorder(null);
 
         // set listeners
-        UpdateListener updateListener = new UpdateListener(browseList);
 		updateMPDBtn.addActionListener(updateListener);
         
         // wrap up
         window.setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 1;
-        gbc.gridy = 0;
-        window.add(topPanel, gbc);
-        gbc.gridx = 1;
-        gbc.gridy = 1;
-        window.add(tableContainer, gbc);
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        window.add(scrollPane, gbc);
-         
-        window.setPreferredSize(new Dimension(600, 600));
+        addPart(window, topPanel, 1, 0, 1, 1, 0.7, 0.7 );
+        addPart(window, tableContainer, 1, 1, 1, 1, 0.7, 0.3 );
+        addPart(window, browsePane, 0, 1, 1, 2, 0.3, 1.0 );
         window.pack();
         window.setVisible(true); 
-        connect("192.168.1.87", 6600); 
-
-
-        
-
-
     }
 
-     /**
-     * Creates a {@link Comparator} that compares the first letter of two given strings.
+     private void addPart(JFrame window, JComponent comp, int x, int y, int gWidth, int gHeight, double weightx, double weighty) {
+            gbc.gridx = x;
+            gbc.gridy = y;
+            gbc.gridwidth = gWidth;
+            gbc.gridheight = gHeight;
+            gbc.fill = GridBagConstraints.BOTH;
+            gbc.weightx = weightx;
+            gbc.weighty = weighty;      
+            window.add(comp, gbc);
+    }
+
+    /**
+     * Creates a {@link Comparator} that compares the first letter of two given
+     * strings.
      */
-    private static Comparator createComparator() {
-        return new Comparator() {
+    private static Comparator<String> createComparator() {
+        return new Comparator<String>() {
             @Override
-            public int compare(Object arg0, Object arg1) {
-                return arg0.toString().substring(0,1).compareTo(arg1.toString().substring(0,1));
+            public int compare(String arg0, String arg1) {
+                return arg0.substring(0,1).compareTo(arg1.substring(0,1));
             }
         };
     }
 
-    /**
-     * Creates a renderer that can render both separators and regular items.
-     */
-    private static ListCellRenderer createListCellRenderer() {
+    private static DefaultListCellRenderer createListCellRenderer() {
         return new DefaultListCellRenderer() {
+            private static final long serialVersionUID = 1L;
+
             @Override
             public Component getListCellRendererComponent(
-                    JList list, Object value, int index, boolean isSelected, 
+                    JList<?> list, Object value, int index, boolean isSelected, 
                     boolean cellHasFocus) {
                 
-                // call the super renderer to take care of setting the foreground and
-                // background colors.
+
                 JLabel label = (JLabel) super.getListCellRendererComponent(
                         list, value, index, isSelected, cellHasFocus);
 
@@ -162,7 +164,7 @@ public class GUIBuilder {
                 // else if the item being rendered is an actual list item, make it plain
                 //    and shift it in more.
                 if (value instanceof SeparatorList.Separator) {
-                    SeparatorList.Separator separator = (SeparatorList.Separator) value;
+                    SeparatorList.Separator<?> separator = (SeparatorList.Separator<?>) value;
                     label.setText(separator.getGroup().get(0).toString().substring(0,1));
                     label.setFont(label.getFont().deriveFont(Font.BOLD));
                     label.setBorder(BorderFactory.createEmptyBorder(0,5,0,0));
@@ -176,25 +178,5 @@ public class GUIBuilder {
         };
     }
 
-    public void connect(String ip, int port) {
-        // connect to socket
-        try (
-            Socket socket = new Socket(ip, port);
-            BufferedReader serverResponse = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        ) {
-            out = new PrintWriter(socket.getOutputStream(), true);
-            String fromServer;
-            // communicate with server
-            while ((fromServer = serverResponse.readLine()) != null) {
-                System.out.println(fromServer);
-            }
-            socket.close();
-        } catch (UnknownHostException e) {
-            System.err.println("Server at " + ip + " not found.");
-            System.exit(1);
-        } catch (IOException e) {
-            System.err.println("Couldn't get I/O for the connection to " + ip);
-            System.exit(1);
-        }
-    }
+  
 }
