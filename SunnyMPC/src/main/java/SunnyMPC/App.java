@@ -11,6 +11,9 @@ public final class App {
     }
     
     public static void main(String[] args) {
+        Communicate com = new Communicate();
+        com.connect("192.168.1.87", 6600);
+        
         try {
         UIManager.setLookAndFeel(
             UIManager.getSystemLookAndFeelClassName());

@@ -56,22 +56,10 @@ public class GUIBuilder {
         topPanel.add(topBox);
 
         // table
-        String[] columnNames = {"Track #", "Artist", "Title", "Album", "Year", "Format", "Bitrate", "Length"};
-        Object[][] data = {
-            {"Kathy", "Smith",
-                "Snowboarding", 5, false},
-            {"John", "Doe",
-                "Rowing", 3, true},
-            {"Sue", "Black",
-                "Knitting", 2, false},
-            {"Jane", "White",
-                "Speed reading", 20, true},
-            {"Joe", "Brown",
-                "Pool", 10, false}
-        };
-        JTable table = new JTable(data, columnNames);
+        Commands cmds = new Commands();
+        JTable table = new JTable();
         // disable editing
-        DefaultTableModel tableModel = new DefaultTableModel(data, columnNames) {
+        DefaultTableModel tableModel = new DefaultTableModel() {
             private static final long serialVersionUID = 4576897713877240253L;
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -81,23 +69,37 @@ public class GUIBuilder {
         JScrollPane tableContainer = new JScrollPane(table);        
         table.setFillsViewportHeight(true);
         table.setModel(tableModel);
-
+        tableModel.addColumn("artist", cmds.getData("list artist"));
 
         // browseList
         UpdateListener updateListener = new UpdateListener();
-        List<String> artistList = updateListener.getArtistList();
+       
+        
+        
+        List<String> artistList = cmds.getArtistList();
+        
+
+
         String[] artistBrowseList = artistList.toArray(new String[0]);
-        for (String s: artistBrowseList) {
-            System.out.println(s);
-        }
         EventList<String> rawList = GlazedLists.eventListOf(artistBrowseList);
         SeparatorList<String> separatorList =
                 new SeparatorList<String>(rawList, createComparator(), 0, 100000);
-
         JList<String> browseList = new JList<String>(new DefaultEventListModel<String>(separatorList));
         browseList.setCellRenderer(createListCellRenderer());
         JScrollPane browsePane = new JScrollPane(browseList);
         browsePane.setBorder(null);
+
+
+        // top row
+        JPanel controlPanel = new JPanel(); 
+        JButton playBtn = new JButton("Play");
+        JButton nextBtn = new JButton("Next");
+        JButton previousBtn = new JButton("Previous");
+        Box controlBox = Box.createHorizontalBox();
+        controlBox.add(playBtn);
+        controlBox.add(nextBtn);
+        controlBox.add(previousBtn);
+        controlPanel.add(controlBox);
 
         // set listeners
 		updateMPDBtn.addActionListener(updateListener);
@@ -107,8 +109,11 @@ public class GUIBuilder {
         addPart(window, topPanel, 1, 0, 1, 1, 0.7, 0.7 );
         addPart(window, tableContainer, 1, 1, 1, 1, 0.7, 0.3 );
         addPart(window, browsePane, 0, 1, 1, 2, 0.3, 1.0 );
+        addPart(window, controlPanel, 1, 2, 1, 2, 0.3, 1.0 );
         window.pack();
         window.setVisible(true); 
+
+       
     }
 
      private void addPart(JFrame window, JComponent comp, int x, int y, int gWidth, int gHeight, double weightx, double weighty) {
