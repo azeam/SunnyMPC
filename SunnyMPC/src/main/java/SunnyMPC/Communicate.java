@@ -20,13 +20,30 @@ public class Communicate {
         out.println(cmd);
         try {
              // TODO: fix better
-            serverResponse.readLine(); // skip first MPD OK line
-            serverResponse.readLine(); // skip second MPD OK line
+           // serverResponse.readLine(); // skip first MPD OK line
+          //  serverResponse.readLine(); // skip second MPD OK line
             while ((fromServer = serverResponse.readLine()) != null && !fromServer.equals("OK")) {
                 if (fromServer.startsWith("ACK")) {
                     break;
                 }
-                response.add(fromServer.substring(fromServer.indexOf(" ") + 1));
+                response.add(fromServer);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return response;
+    }
+
+    public static String getPlaylist(String cmd) {
+        String fromServer;
+        String response = "";
+        out.println(cmd);
+        try {
+            while ((fromServer = serverResponse.readLine()) != null && !fromServer.equals("OK")) {
+                if (fromServer.startsWith("ACK")) {
+                    break;
+                }
+                response += fromServer;
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -39,7 +56,6 @@ public class Communicate {
             out.println(cmd);
             String fromServer;
             while ((fromServer = serverResponse.readLine()) != null && !fromServer.equals("OK")) {
-                
                 System.out.println(fromServer);
                 if (fromServer.startsWith("ACK")) {
                     return false;

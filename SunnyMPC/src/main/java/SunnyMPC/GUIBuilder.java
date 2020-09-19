@@ -7,6 +7,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -32,7 +33,21 @@ public class GUIBuilder {
     private final int hGap = 5;
     private final int vGap = 5;
 
+    static JTable table;
+
     private GridBagConstraints gbc;
+
+    public void setTableData(Object[] data) {
+        DefaultTableModel tableModel = new DefaultTableModel() {
+            private static final long serialVersionUID = 4576897713877240253L;
+            @Override
+            public boolean isCellEditable(int row, int column) {
+               return false;
+            }
+        };
+        tableModel.addColumn("Track #", data);
+        table.setModel(tableModel); 
+    }
 
     public void build() {
         // main layout
@@ -57,20 +72,12 @@ public class GUIBuilder {
 
         // table
         Commands cmds = new Commands();
-        JTable table = new JTable();
+        table = new JTable();
         // disable editing
-        DefaultTableModel tableModel = new DefaultTableModel() {
-            private static final long serialVersionUID = 4576897713877240253L;
-            @Override
-            public boolean isCellEditable(int row, int column) {
-               return false;
-            }
-        };
+        
         JScrollPane tableContainer = new JScrollPane(table);        
         table.setFillsViewportHeight(true);
-        table.setModel(tableModel);
-        tableModel.addColumn("artist", cmds.getData("list artist"));
-
+        
         // browseList
         UpdateListener updateListener = new UpdateListener();
        
