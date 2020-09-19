@@ -7,7 +7,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -22,6 +21,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.WindowConstants;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
 import ca.odell.glazedlists.EventList;
@@ -37,7 +38,7 @@ public class GUIBuilder {
 
     private GridBagConstraints gbc;
 
-    public void setTableData(Object[] data) {
+    public void setTableData(String columnName, Object[] data, String columnName2, Object[] data2) {
         DefaultTableModel tableModel = new DefaultTableModel() {
             private static final long serialVersionUID = 4576897713877240253L;
             @Override
@@ -45,8 +46,17 @@ public class GUIBuilder {
                return false;
             }
         };
-        tableModel.addColumn("Track #", data);
+        tableModel.addColumn(columnName, data);
+        tableModel.addColumn(columnName2, data2);
         table.setModel(tableModel); 
+        table.removeColumn(table.getColumnModel().getColumn(0)); // hide id column
+        
+        table.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
+            public void valueChanged(ListSelectionEvent event) {
+                // get value from hidden id column
+                Communicate.sendCmd("playid " + table.getModel().getValueAt(table.getSelectedRow(), 0).toString());
+            }
+        });
     }
 
     public void build() {
