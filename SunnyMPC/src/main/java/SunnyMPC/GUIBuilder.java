@@ -17,8 +17,12 @@ import javax.swing.JTree;
 import javax.swing.WindowConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
 
 import ca.odell.glazedlists.EventList;
 
@@ -26,6 +30,7 @@ public class GUIBuilder {
     private final int hGap = 5;
     private final int vGap = 5;
     static JTable table;
+    static JTree tree;
     static EventList<String> artistList;
     private GridBagConstraints gbc;
 
@@ -37,6 +42,29 @@ public class GUIBuilder {
             int i = table.getSelectedRow();
             if (i >= 0) {
                 Communicate.sendCmd("playid " + table.getModel().getValueAt(table.getSelectedRow(), 0).toString());
+            }
+        }
+    };
+
+    private TreeExpansionListener tel = new TreeExpansionListener() {
+        @Override
+        public void treeCollapsed(TreeExpansionEvent arg0) {}
+
+        @Override
+        public void treeExpanded(TreeExpansionEvent arg0) {
+            // working search    List<String> albumStringList = cmds.getList("find \"(artist == \'" + artist + "\\\')\"");
+            // add albums on expand
+            TreePath selectedPath = arg0.getPath();          
+            DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode)selectedPath.getLastPathComponent();
+            DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+           
+            if (selectedNode.getChildCount() == 1) {
+                String artist = selectedNode.toString();
+                Commands cmds = new Commands();
+                List<String> albumStringList = cmds.getList("list album \"" + artist + "\"");
+                for (String album : albumStringList) {
+                    model.insertNodeInto(new DefaultMutableTreeNode(album), selectedNode, 0);             
+                }
             }
         }
     };
@@ -84,38 +112,23 @@ public class GUIBuilder {
         table.setFillsViewportHeight(true);
         table.getSelectionModel().addListSelectionListener(trackListener); 
 
-        // browseList
+        // artist list
         Commands cmds = new Commands();
         List<String> artistStringList = cmds.getList("list albumartist");
-       
-        //create the root node
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("artists");
-        //create the child nodes
         for (String artist : artistStringList) {
             DefaultMutableTreeNode artistNode = new DefaultMutableTreeNode(artist);
             root.add(artistNode);
-    
-            DefaultMutableTreeNode albumNode = new DefaultMutableTreeNode("album");
+            // add empty line to show chevron
+            DefaultMutableTreeNode albumNode = new DefaultMutableTreeNode("");
             artistNode.add(albumNode);
-    
-            // working search    List<String> albumStringList = cmds.getList("find \"(artist == \'" + artist + "\\\')\"");
-    
-            // super slow to add all albums at start, but works, only add if clicking
-            /*
-                List<String> albumStringList = cmds.getList("list album \"" + artist + "\"");
-                for (String album : albumStringList) {
-
-                    DefaultMutableTreeNode albumNode = new DefaultMutableTreeNode(album);
-                    artistNode.add(albumNode);
-                }
-            */
         }
          
-        JTree tree = new JTree(root);
+        tree = new JTree(root);
         tree.expandRow(0);
-        tree.setRootVisible(false);
+        tree.setRootVisible(false); // hide root node
+        tree.addTreeExpansionListener(tel);
         JScrollPane artistContainer = new JScrollPane(tree); 
-
         
         // top row
         JPanel controlPanel = new JPanel(); 

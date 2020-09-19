@@ -10,9 +10,11 @@ public class UpdateListener implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent ae) {
         Communicate.sendCmd("clear");
-        Communicate.sendCmd("add Adele");
+        Communicate.sendCmd("add Beck");
 
         String playlist = Communicate.getPlaylist("playlistinfo");
+
+        
         List<Integer> ids = new ArrayList<Integer>();
         List<String> titles = new ArrayList<String>();
         String[] track = playlist.split("file:");
@@ -20,7 +22,10 @@ public class UpdateListener implements ActionListener {
             if (row.contains("Id: ") && row.contains("Title: ")) {
                 ids.add(Integer.parseInt(row.split("Id: ")[1].trim()));
                 String title = row.split("Title: ")[1];
-                titles.add(title.split("Track: ")[0].trim());
+                title = title.split("Track: ")[0];
+                title = title.split("Album: ")[0];
+                titles.add(title.trim());
+                
             }
         }
         // split playlistinfo and build table data from that, including pos for song position to start that
