@@ -1,36 +1,26 @@
 package SunnyMPC;
 
-import java.awt.Component;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.util.Comparator;
 import java.util.List;
 
-import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTree;
 import javax.swing.WindowConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 import ca.odell.glazedlists.EventList;
-import ca.odell.glazedlists.GlazedLists;
-import ca.odell.glazedlists.SeparatorList;
-import ca.odell.glazedlists.event.ListEvent;
-import ca.odell.glazedlists.event.ListEventListener;
-import ca.odell.glazedlists.swing.DefaultEventListModel;
 
 public class GUIBuilder {
     private final int hGap = 5;
@@ -48,13 +38,6 @@ public class GUIBuilder {
             if (i >= 0) {
                 Communicate.sendCmd("playid " + table.getModel().getValueAt(table.getSelectedRow(), 0).toString());
             }
-        }
-    };
-
-    private ListEventListener artistListener = new ListEventListener() {
-        @Override
-        public void listChanged(ListEvent listChanges) {
-            System.out.println("playid ");
         }
     };
 
@@ -103,17 +86,36 @@ public class GUIBuilder {
 
         // browseList
         Commands cmds = new Commands();
-        List<String> artistStringList = cmds.getArtistList();
-        String[] artistBrowseList = artistStringList.toArray(new String[0]);
-        artistList = GlazedLists.eventListOf(artistBrowseList);
-        SeparatorList<String> separatorList =
-                new SeparatorList<String>(artistList, createComparator(), 0, 100000);
-        JList<String> browseList = new JList<String>(new DefaultEventListModel<String>(separatorList));
-        browseList.setCellRenderer(createListCellRenderer());
-        JScrollPane browsePane = new JScrollPane(browseList);
-        browsePane.setBorder(null);
-        artistList.addListEventListener(artistListener);
-        
+        List<String> artistStringList = cmds.getList("list albumartist");
+       
+        //create the root node
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode("artists");
+        //create the child nodes
+        for (String artist : artistStringList) {
+            DefaultMutableTreeNode artistNode = new DefaultMutableTreeNode(artist);
+            root.add(artistNode);
+    
+            DefaultMutableTreeNode albumNode = new DefaultMutableTreeNode("album");
+            artistNode.add(albumNode);
+    
+            // working search    List<String> albumStringList = cmds.getList("find \"(artist == \'" + artist + "\\\')\"");
+    
+            // super slow to add all albums at start, but works, only add if clicking
+            /*
+                List<String> albumStringList = cmds.getList("list album \"" + artist + "\"");
+                for (String album : albumStringList) {
+
+                    DefaultMutableTreeNode albumNode = new DefaultMutableTreeNode(album);
+                    artistNode.add(albumNode);
+                }
+            */
+        }
+         
+        JTree tree = new JTree(root);
+        tree.expandRow(0);
+        tree.setRootVisible(false);
+        JScrollPane artistContainer = new JScrollPane(tree); 
+
         
         // top row
         JPanel controlPanel = new JPanel(); 
@@ -134,7 +136,7 @@ public class GUIBuilder {
         window.setLayout(new GridBagLayout());
         addPart(window, topPanel, 1, 0, 1, 1, 0.7, 0.7 );
         addPart(window, tableContainer, 1, 1, 1, 1, 0.7, 0.3 );
-        addPart(window, browsePane, 0, 1, 1, 2, 0.3, 1.0 );
+        addPart(window, artistContainer, 0, 1, 1, 2, 0.3, 1.0 );
         addPart(window, controlPanel, 1, 2, 1, 2, 0.3, 1.0 );
         window.pack();
         window.setVisible(true); 
@@ -153,50 +155,7 @@ public class GUIBuilder {
             window.add(comp, gbc);
     }
 
-    /**
-     * Creates a {@link Comparator} that compares the first letter of two given
-     * strings.
-     */
-    private static Comparator<String> createComparator() {
-        return new Comparator<String>() {
-            @Override
-            public int compare(String arg0, String arg1) {
-                return arg0.substring(0,1).compareTo(arg1.substring(0,1));
-            }
-        };
-    }
-
-    private static DefaultListCellRenderer createListCellRenderer() {
-        return new DefaultListCellRenderer() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public Component getListCellRendererComponent(
-                    JList<?> list, Object value, int index, boolean isSelected, 
-                    boolean cellHasFocus) {
-                
-
-                JLabel label = (JLabel) super.getListCellRendererComponent(
-                        list, value, index, isSelected, cellHasFocus);
-
-                // if the item being renderered is a separator, then bold it, and shift
-                //    in slightly.
-                // else if the item being rendered is an actual list item, make it plain
-                //    and shift it in more.
-                if (value instanceof SeparatorList.Separator) {
-                    SeparatorList.Separator<?> separator = (SeparatorList.Separator<?>) value;
-                    label.setText(separator.getGroup().get(0).toString().substring(0,1));
-                    label.setFont(label.getFont().deriveFont(Font.BOLD));
-                    label.setBorder(BorderFactory.createEmptyBorder(0,5,0,0));
-                } else {
-                    label.setFont(label.getFont().deriveFont(Font.PLAIN));
-                    label.setBorder(BorderFactory.createEmptyBorder(0,15,0,0));
-                }
-
-                return label;
-            }
-        };
-    }
+   
 
   
 }

@@ -5,12 +5,12 @@ import java.util.List;
 
 public class Commands {
 
-    public List<String> getArtistList() {
-        List<String> artistList = new ArrayList<String>();
-        for (String row : Communicate.getList("list artist")) {
-            artistList.add(row.substring(row.indexOf(" ") + 1));
+    public List<String> getList(String cmd) {
+        List<String> list = new ArrayList<String>();
+        for (String row : Communicate.getList(cmd)) {
+            list.add(row.substring(row.indexOf(" ") + 1));
         }
-        return artistList;
+        return list;
     }
 
     public Object[] getData(String cmd) {

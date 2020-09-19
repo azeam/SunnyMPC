@@ -19,9 +19,10 @@ public class Communicate {
         out.println(cmd);
         try {
              // TODO: fix better
-            serverResponse.readLine(); // skip first MPD OK line
-            serverResponse.readLine(); // skip second MPD OK line
+    //        serverResponse.readLine(); // skip first MPD OK line
+    //        serverResponse.readLine(); // skip second MPD OK line
             while ((fromServer = serverResponse.readLine()) != null && !fromServer.equals("OK")) {
+                System.out.println(fromServer);
                 if (fromServer.startsWith("ACK")) {
                     break;
                 }
