@@ -28,35 +28,50 @@ import javax.swing.table.DefaultTableModel;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.SeparatorList;
+import ca.odell.glazedlists.event.ListEvent;
+import ca.odell.glazedlists.event.ListEventListener;
 import ca.odell.glazedlists.swing.DefaultEventListModel;
 
 public class GUIBuilder {
     private final int hGap = 5;
     private final int vGap = 5;
-
     static JTable table;
-
+    static EventList<String> artistList;
     private GridBagConstraints gbc;
 
-    public void setTableData(String columnName, Object[] data, String columnName2, Object[] data2) {
-        DefaultTableModel tableModel = new DefaultTableModel() {
-            private static final long serialVersionUID = 4576897713877240253L;
-            @Override
-            public boolean isCellEditable(int row, int column) {
-               return false;
-            }
-        };
-        tableModel.addColumn(columnName, data);
-        tableModel.addColumn(columnName2, data2);
-        table.setModel(tableModel); 
-        table.removeColumn(table.getColumnModel().getColumn(0)); // hide id column
-        
-        table.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
-            public void valueChanged(ListSelectionEvent event) {
-                // get value from hidden id column
+    private ListSelectionListener trackListener = new ListSelectionListener() {
+        public void valueChanged(ListSelectionEvent event) {
+            // get value from hidden id column
+            // check if row exists because removing column when updating data will trigger
+            // valuechanged, causing IOB
+            int i = table.getSelectedRow();
+            if (i >= 0) {
                 Communicate.sendCmd("playid " + table.getModel().getValueAt(table.getSelectedRow(), 0).toString());
             }
-        });
+        }
+    };
+
+    private ListEventListener artistListener = new ListEventListener() {
+        @Override
+        public void listChanged(ListEvent listChanges) {
+            System.out.println("playid ");
+        }
+    };
+
+    private DefaultTableModel tableModel = new DefaultTableModel() {
+        private static final long serialVersionUID = 1L;
+        @Override
+        public boolean isCellEditable(int row, int column) {
+           return false;
+        }
+    };
+
+    public void setTableData(String idCol, Object[] idData, String titleCol, Object[] titleData) {
+        // disable editing
+        tableModel.addColumn(idCol, idData);
+        tableModel.addColumn(titleCol, titleData);
+        table.setModel(tableModel); 
+        table.removeColumn(table.getColumnModel().getColumn(0)); // hide id column  
     }
 
     public void build() {
@@ -81,32 +96,25 @@ public class GUIBuilder {
         topPanel.add(topBox);
 
         // table
-        Commands cmds = new Commands();
-        table = new JTable();
-        // disable editing
-        
+        table = new JTable();  
         JScrollPane tableContainer = new JScrollPane(table);        
         table.setFillsViewportHeight(true);
-        
+        table.getSelectionModel().addListSelectionListener(trackListener); 
+
         // browseList
-        UpdateListener updateListener = new UpdateListener();
-       
-        
-        
-        List<String> artistList = cmds.getArtistList();
-        
-
-
-        String[] artistBrowseList = artistList.toArray(new String[0]);
-        EventList<String> rawList = GlazedLists.eventListOf(artistBrowseList);
+        Commands cmds = new Commands();
+        List<String> artistStringList = cmds.getArtistList();
+        String[] artistBrowseList = artistStringList.toArray(new String[0]);
+        artistList = GlazedLists.eventListOf(artistBrowseList);
         SeparatorList<String> separatorList =
-                new SeparatorList<String>(rawList, createComparator(), 0, 100000);
+                new SeparatorList<String>(artistList, createComparator(), 0, 100000);
         JList<String> browseList = new JList<String>(new DefaultEventListModel<String>(separatorList));
         browseList.setCellRenderer(createListCellRenderer());
         JScrollPane browsePane = new JScrollPane(browseList);
         browsePane.setBorder(null);
-
-
+        artistList.addListEventListener(artistListener);
+        
+        
         // top row
         JPanel controlPanel = new JPanel(); 
         JButton playBtn = new JButton("Play");
@@ -119,6 +127,7 @@ public class GUIBuilder {
         controlPanel.add(controlBox);
 
         // set listeners
+        UpdateListener updateListener = new UpdateListener();
 		updateMPDBtn.addActionListener(updateListener);
         
         // wrap up

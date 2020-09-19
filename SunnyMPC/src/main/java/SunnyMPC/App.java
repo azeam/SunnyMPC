@@ -12,7 +12,7 @@ public final class App {
     
     public static void main(String[] args) {
         Communicate com = new Communicate();
-        com.connect("127.0.0.1", 6600);
+        com.connect("192.168.1.87", 6600);
         
         try {
         UIManager.setLookAndFeel(

@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Communicate {
-    static Socket socket;
     static PrintWriter out;
     static BufferedReader serverResponse;
 
@@ -20,8 +19,8 @@ public class Communicate {
         out.println(cmd);
         try {
              // TODO: fix better
-           // serverResponse.readLine(); // skip first MPD OK line
-          //  serverResponse.readLine(); // skip second MPD OK line
+            serverResponse.readLine(); // skip first MPD OK line
+            serverResponse.readLine(); // skip second MPD OK line
             while ((fromServer = serverResponse.readLine()) != null && !fromServer.equals("OK")) {
                 if (fromServer.startsWith("ACK")) {
                     break;
@@ -71,7 +70,7 @@ public class Communicate {
     public void connect(String ip, int port) {
         // connect to socket
         try {    
-            socket = new Socket(ip, port);
+            Socket socket = new Socket(ip, port);
             out = new PrintWriter(socket.getOutputStream(), true);
             serverResponse = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         } catch (UnknownHostException e) {
