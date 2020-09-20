@@ -58,8 +58,7 @@ public class GUIBuilder {
 
         @Override
         public void treeExpanded(TreeExpansionEvent arg0) {
-            // working search List<String> albumStringList = cmds.getList("find \"(artist ==
-            // \'" + artist + "\\\')\"");
+            
             // add albums on expand
             TreePath selectedPath = arg0.getPath();
             DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) selectedPath.getLastPathComponent();
@@ -158,7 +157,6 @@ public class GUIBuilder {
             DefaultMutableTreeNode albumNode = new DefaultMutableTreeNode("");
             artistNode.add(albumNode);
         }
-         
         tree = new JTree(root);
         tree.expandRow(0);
         tree.setRootVisible(false); // hide root node
@@ -178,7 +176,10 @@ public class GUIBuilder {
 
         // set listeners
         UpdateListener updateListener = new UpdateListener();
-		updateMPDBtn.addActionListener(updateListener);
+        updateMPDBtn.addActionListener(updateListener);
+        
+        LeftPaneListener leftPaneListener = new LeftPaneListener(table);
+        tree.addTreeSelectionListener(leftPaneListener);
         
         // wrap up
         window.setLayout(new GridBagLayout());

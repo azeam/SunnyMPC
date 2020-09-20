@@ -11,7 +11,7 @@ public final class App {
     }
     
     public static void main(String[] args) {
-        Communicate.connect("127.0.0.1", 6600);
+        Communicate.connect("192.168.1.87", 6600);
         
         try {
         UIManager.setLookAndFeel(
