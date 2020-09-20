@@ -3,8 +3,9 @@ package SunnyMPC;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Vector;
 
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -90,27 +91,32 @@ public class GUIBuilder {
         String[] titles = new String[rowData.size()];
         String[] artists = new String[rowData.size()];
         String[] albums = new String[rowData.size()];
-        Long[] duration = new Long[rowData.size()];
+        String[] time = new String[rowData.size()];
 
         Gson gson = new Gson();
         int i = 0;
-
         for (String s : rowData) {    
             Track track = gson.fromJson(s, Track.class);
             ids[i] = track.getId();
             titles[i] = track.getTitle();
             artists[i] = track.getArtist();
             albums[i] = track.getAlbum();
-            duration[i] = track.getDuration();
+            time[i] = getMinutes(track.getTime());
             i++;
         }
         tableModel.addColumn("id", ids);
         tableModel.addColumn(headers[0], titles);
         tableModel.addColumn(headers[1], albums);
         tableModel.addColumn(headers[2], artists);
-        tableModel.addColumn(headers[3], duration);
+        tableModel.addColumn(headers[3], time);
         table.setModel(tableModel); 
         table.removeColumn(table.getColumnModel().getColumn(0)); // hide id column  
+    }
+
+    private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+
+    private String getMinutes(int time) {
+        return LocalTime.MIN.plusSeconds(time).format(formatter).toString();
     }
 
     public void build() {

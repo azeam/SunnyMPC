@@ -7,7 +7,7 @@ public class Commands {
 
     public List<String> getList(String cmd) {
         List<String> list = new ArrayList<String>();
-        for (String row : Communicate.getList(cmd)) {
+        for (String row : Communicate.sendCmd(cmd)) {
             list.add(row.substring(row.indexOf(" ") + 1));
         }
         return list;
@@ -15,7 +15,7 @@ public class Commands {
 
     public Object[] getData(String cmd) {
         List<String> treatedList = new ArrayList<String>();
-        for (String row : Communicate.getList(cmd)) {
+        for (String row : Communicate.sendCmd(cmd)) {
             treatedList.add(row.substring(row.indexOf(" ") + 1));
         }
         String[] data = treatedList.toArray(new String[0]);

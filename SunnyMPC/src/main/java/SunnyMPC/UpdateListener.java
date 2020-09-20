@@ -12,11 +12,8 @@ public class UpdateListener implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent ae) {
-        Communicate.sendCmd("clear");
-        Communicate.sendCmd("add Adele");
-        Communicate.sendCmd("add Aerosmith");
-
-        List<String> playlist = Communicate.getList("playlistinfo");
+        List<String> playlist = Communicate.sendCmd("command_list_begin\nclear\nadd Adele\nadd Aerosmith\nplaylistinfo\npause\ncommand_list_end");
+        
         List<String> rowData = new ArrayList<String>();
         Track track = null;
         for (String row : playlist) {
@@ -29,7 +26,7 @@ public class UpdateListener implements ActionListener {
             else if (row.startsWith("Album:")) {
                 track.setAlbum(row.substring(row.indexOf(" ") + 1));
             }
-            else if (row.startsWith("Artist:")) {
+            else if (row.startsWith("Artist:") || row.startsWith("AlbumArtist:")) {
                 track.setArtist(row.substring(row.indexOf(" ") + 1));
             }
             else if (row.startsWith("MUSICBRAINZ_ALBUMID:")) {
@@ -38,8 +35,8 @@ public class UpdateListener implements ActionListener {
             else if (row.startsWith("MUSICBRAINZ_ALBUMARTISTID:")) {
                 track.setMBArtistId(row.substring(row.indexOf(" ") + 1));
             }
-            else if (row.startsWith("Duration:")) {
-                track.setDuration(Long.parseLong(row.substring(row.indexOf(" ") + 1)));
+            else if (row.startsWith("duration:")) {
+                track.setDuration(Double.parseDouble(row.substring(row.indexOf(" ") + 1)));
             }
             else if (row.startsWith("Time:")) {
                 track.setTime(Integer.parseInt(row.substring(row.indexOf(" ") + 1)));
@@ -57,7 +54,6 @@ public class UpdateListener implements ActionListener {
             }
         }
 
-        Communicate.sendCmd("pause");
         GUIBuilder guiBuilder = new GUIBuilder();
         guiBuilder.setTableData(rowData);
     }

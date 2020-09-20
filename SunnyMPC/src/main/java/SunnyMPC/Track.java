@@ -8,7 +8,7 @@ class Track {
     private String MBAlbumId = "";
     private String MBArtistId = "";
     private int time = 0;
-    private long duration = 0;
+    private double duration = 0;
 
     public int getId() {
         return id;
@@ -52,10 +52,10 @@ class Track {
     public void setTime(int time) {
         this.time = time;
     }
-    public long getDuration() {
+    public double getDuration() {
         return duration;
     }
-    public void setDuration(long duration) {
+    public void setDuration(double duration) {
         this.duration = duration;
     }
 }
