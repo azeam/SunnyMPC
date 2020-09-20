@@ -4,6 +4,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.List;
+import java.util.Vector;
 
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -24,6 +25,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+import com.google.gson.Gson;
+
 import ca.odell.glazedlists.EventList;
 
 public class GUIBuilder {
@@ -33,6 +36,7 @@ public class GUIBuilder {
     static JTree tree;
     static EventList<String> artistList;
     private GridBagConstraints gbc;
+    private String[] headers = {"Title", "Album", "Artist", "Duration"};
 
     private ListSelectionListener trackListener = new ListSelectionListener() {
         public void valueChanged(ListSelectionEvent event) {
@@ -48,22 +52,24 @@ public class GUIBuilder {
 
     private TreeExpansionListener tel = new TreeExpansionListener() {
         @Override
-        public void treeCollapsed(TreeExpansionEvent arg0) {}
+        public void treeCollapsed(TreeExpansionEvent arg0) {
+        }
 
         @Override
         public void treeExpanded(TreeExpansionEvent arg0) {
-            // working search    List<String> albumStringList = cmds.getList("find \"(artist == \'" + artist + "\\\')\"");
+            // working search List<String> albumStringList = cmds.getList("find \"(artist ==
+            // \'" + artist + "\\\')\"");
             // add albums on expand
-            TreePath selectedPath = arg0.getPath();          
-            DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode)selectedPath.getLastPathComponent();
+            TreePath selectedPath = arg0.getPath();
+            DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) selectedPath.getLastPathComponent();
             DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
-           
+
             if (selectedNode.getChildCount() == 1) {
                 String artist = selectedNode.toString();
                 Commands cmds = new Commands();
                 List<String> albumStringList = cmds.getList("list album \"" + artist + "\"");
                 for (String album : albumStringList) {
-                    model.insertNodeInto(new DefaultMutableTreeNode(album), selectedNode, 0);             
+                    model.insertNodeInto(new DefaultMutableTreeNode(album), selectedNode, 0);
                 }
             }
         }
@@ -71,16 +77,38 @@ public class GUIBuilder {
 
     private DefaultTableModel tableModel = new DefaultTableModel() {
         private static final long serialVersionUID = 1L;
+
         @Override
         public boolean isCellEditable(int row, int column) {
-           return false;
+            return false;
         }
     };
 
-    public void setTableData(String idCol, Object[] idData, String titleCol, Object[] titleData) {
+    public void setTableData(List<String> rowData) {
         // disable editing
-        tableModel.addColumn(idCol, idData);
-        tableModel.addColumn(titleCol, titleData);
+        Integer[] ids = new Integer[rowData.size()];
+        String[] titles = new String[rowData.size()];
+        String[] artists = new String[rowData.size()];
+        String[] albums = new String[rowData.size()];
+        Long[] duration = new Long[rowData.size()];
+
+        Gson gson = new Gson();
+        int i = 0;
+
+        for (String s : rowData) {    
+            Track track = gson.fromJson(s, Track.class);
+            ids[i] = track.getId();
+            titles[i] = track.getTitle();
+            artists[i] = track.getArtist();
+            albums[i] = track.getAlbum();
+            duration[i] = track.getDuration();
+            i++;
+        }
+        tableModel.addColumn("id", ids);
+        tableModel.addColumn(headers[0], titles);
+        tableModel.addColumn(headers[1], albums);
+        tableModel.addColumn(headers[2], artists);
+        tableModel.addColumn(headers[3], duration);
         table.setModel(tableModel); 
         table.removeColumn(table.getColumnModel().getColumn(0)); // hide id column  
     }
@@ -107,7 +135,8 @@ public class GUIBuilder {
         topPanel.add(topBox);
 
         // table
-        table = new JTable();  
+        Object[][] rows = new Object[][] {};
+        table = new JTable(rows, headers);
         JScrollPane tableContainer = new JScrollPane(table);        
         table.setFillsViewportHeight(true);
         table.getSelectionModel().addListSelectionListener(trackListener); 

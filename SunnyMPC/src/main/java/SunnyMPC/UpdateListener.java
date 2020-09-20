@@ -5,39 +5,61 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class UpdateListener implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent ae) {
         Communicate.sendCmd("clear");
-        Communicate.sendCmd("add Beck");
+        Communicate.sendCmd("add Adele");
+        Communicate.sendCmd("add Aerosmith");
 
-        String playlist = Communicate.getPlaylist("playlistinfo");
-
-        
-        List<Integer> ids = new ArrayList<Integer>();
-        List<String> titles = new ArrayList<String>();
-        String[] track = playlist.split("file:");
-        for (String row : track) {
-            if (row.contains("Id: ") && row.contains("Title: ")) {
-                ids.add(Integer.parseInt(row.split("Id: ")[1].trim()));
-                String title = row.split("Title: ")[1];
-                title = title.split("Track: ")[0];
-                title = title.split("Album: ")[0];
-                titles.add(title.trim());
-                
+        List<String> playlist = Communicate.getList("playlistinfo");
+        List<String> rowData = new ArrayList<String>();
+        Track track = null;
+        for (String row : playlist) {
+            if (row.startsWith("file:")) {
+                track = new Track();
+            }
+            else if (row.startsWith("Title:")) {
+                track.setTitle(row.substring(row.indexOf(" ") + 1));
+            }
+            else if (row.startsWith("Album:")) {
+                track.setAlbum(row.substring(row.indexOf(" ") + 1));
+            }
+            else if (row.startsWith("Artist:")) {
+                track.setArtist(row.substring(row.indexOf(" ") + 1));
+            }
+            else if (row.startsWith("MUSICBRAINZ_ALBUMID:")) {
+                track.setMBAlbumId(row.substring(row.indexOf(" ") + 1));
+            }
+            else if (row.startsWith("MUSICBRAINZ_ALBUMARTISTID:")) {
+                track.setMBArtistId(row.substring(row.indexOf(" ") + 1));
+            }
+            else if (row.startsWith("Duration:")) {
+                track.setDuration(Long.parseLong(row.substring(row.indexOf(" ") + 1)));
+            }
+            else if (row.startsWith("Time:")) {
+                track.setTime(Integer.parseInt(row.substring(row.indexOf(" ") + 1)));
+            }
+            else if (row.startsWith("Id: ")) {
+                track.setId(Integer.parseInt(row.substring(row.indexOf(" ") + 1)));
+                ObjectMapper mapper = new ObjectMapper();
+                String jsonString = "";
+                try {
+                    jsonString = mapper.writeValueAsString(track);
+                    rowData.add(jsonString);
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
             }
         }
-        // split playlistinfo and build table data from that, including pos for song position to start that
-        // when double clicking row, set listener and start that
-        // split on file: do for loop and add row with id, title etc.
-        // TODO: list of data and column names to add
 
         Communicate.sendCmd("pause");
         GUIBuilder guiBuilder = new GUIBuilder();
-        Integer[] idData = ids.toArray(new Integer[0]);
-        String[] titleData = titles.toArray(new String[0]);
-        guiBuilder.setTableData("ID", idData, "Title", titleData);
+        guiBuilder.setTableData(rowData);
     }
 
     
