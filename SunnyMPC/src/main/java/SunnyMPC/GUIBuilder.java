@@ -76,30 +76,12 @@ public class GUIBuilder {
         model.reload();
     }
 
-    public void setTableData(List<String> rowData) {
-        Integer[] ids = new Integer[rowData.size()];
-        String[] titles = new String[rowData.size()];
-        String[] artists = new String[rowData.size()];
-        String[] albums = new String[rowData.size()];
-        String[] time = new String[rowData.size()];
-
-        Gson gson = new Gson();
-        Helper helper = new Helper();
-        int i = 0;
-        for (String s : rowData) {    
-            Track track = gson.fromJson(s, Track.class);
-            ids[i] = track.getId();
-            titles[i] = track.getTitle();
-            artists[i] = track.getArtist();
-            albums[i] = track.getAlbum();
-            time[i] = helper.getMinutes(track.getTime());
-            i++;
-        }
-        tableModel.addColumn("id", ids);
-        tableModel.addColumn(headers[0], titles);
-        tableModel.addColumn(headers[1], albums);
-        tableModel.addColumn(headers[2], artists);
-        tableModel.addColumn(headers[3], time);
+    public void setTableData(List<Object[]> rowData) {
+        tableModel.addColumn("id", rowData.get(0));
+        tableModel.addColumn(headers[0], rowData.get(1));
+        tableModel.addColumn(headers[1], rowData.get(2));
+        tableModel.addColumn(headers[2], rowData.get(3));
+        tableModel.addColumn(headers[3], rowData.get(4));
         table.setModel(tableModel); 
         table.removeColumn(table.getColumnModel().getColumn(0)); // hide id column  
     }
@@ -192,15 +174,15 @@ public class GUIBuilder {
         }     
     }
 
-     private void addPart(JFrame window, JComponent comp, int x, int y, int gWidth, int gHeight, double weightx, double weighty) {
-            gbc.gridx = x;
-            gbc.gridy = y;
-            gbc.gridwidth = gWidth;
-            gbc.gridheight = gHeight;
-            gbc.fill = GridBagConstraints.BOTH;
-            gbc.weightx = weightx;
-            gbc.weighty = weighty;      
-            window.add(comp, gbc);
+    private void addPart(JFrame window, JComponent comp, int x, int y, int gWidth, int gHeight, double weightx, double weighty) {
+        gbc.gridx = x;
+        gbc.gridy = y;
+        gbc.gridwidth = gWidth;
+        gbc.gridheight = gHeight;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = weightx;
+        gbc.weighty = weighty;      
+        window.add(comp, gbc);
     }
   
 }

@@ -13,6 +13,7 @@ import javax.swing.tree.TreePath;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 
 import SunnyMPC.Communicate;
 import SunnyMPC.GUIBuilder;
@@ -32,10 +33,12 @@ public class AddToPlaylistListener implements TreeSelectionListener {
     }
 
     private static void startThread(TreeSelectionEvent arg0) { 
-        SwingWorker<List<String>, List<String>> sw = new SwingWorker<List<String>, List<String>>() { 
+        SwingWorker<List<Object[]>, List<Object[]>> sw = new SwingWorker<List<Object[]>, List<Object[]>>() { 
 
             @Override
-            protected List<String> doInBackground() throws Exception { 
+            protected List<Object[]> doInBackground() throws Exception {
+                Helper helper = new Helper();
+
                 TreePath selectedPath = arg0.getPath();
                 DefaultMutableTreeNode albumNode = (DefaultMutableTreeNode) selectedPath.getLastPathComponent();
                 DefaultMutableTreeNode artistNode = (DefaultMutableTreeNode) selectedPath.getPathComponent(1);
@@ -44,7 +47,6 @@ public class AddToPlaylistListener implements TreeSelectionListener {
                 if (albumNode == null) {return null;}
                 
                 if (albumNode.isLeaf()) {
-                    Helper helper = new Helper();
                     String selectedAlbum = albumNode.toString();
                     String selectedArtist = artistNode.toString();
                     List<String> playlist = Communicate.sendCmd("command_list_begin\nclear\nsearchadd artist " + helper.escapeString(selectedArtist) + " album " + helper.escapeString(selectedAlbum) + "\nplaylistinfo\ncommand_list_end");
@@ -86,14 +88,37 @@ public class AddToPlaylistListener implements TreeSelectionListener {
                             }
                         }
                     }
-                } 
-                return rowData; 
+                }
+                Integer[] ids = new Integer[rowData.size()];
+                String[] titles = new String[rowData.size()];
+                String[] artists = new String[rowData.size()];
+                String[] albums = new String[rowData.size()];
+                String[] time = new String[rowData.size()];
+
+                Gson gson = new Gson();
+                int i = 0;
+                for (String s : rowData) {    
+                    Track track = gson.fromJson(s, Track.class);
+                    ids[i] = track.getId();
+                    titles[i] = track.getTitle();
+                    artists[i] = track.getArtist();
+                    albums[i] = track.getAlbum();
+                    time[i] = helper.getMinutes(track.getTime());
+                    i++;
+                }
+                List<Object[]> data = new ArrayList<Object[]>();
+                data.add(ids);
+                data.add(titles);
+                data.add(artists);
+                data.add(albums);
+                data.add(time);
+                return data; 
             }
 
             @Override
             protected void done() { 
                 try { 
-                    List<String> rowData = get();
+                    List<Object[]> rowData = get();
                     if (rowData.size() > 0) {
                         GUIBuilder guiBuilder = new GUIBuilder();
                         guiBuilder.setTableData(rowData);
