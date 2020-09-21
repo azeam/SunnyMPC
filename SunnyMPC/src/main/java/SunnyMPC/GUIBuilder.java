@@ -3,8 +3,6 @@ package SunnyMPC;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import javax.swing.Box;
@@ -17,17 +15,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.WindowConstants;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeExpansionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreePath;
 
 import com.google.gson.Gson;
 
+import SunnyMPC.listeners.*;
 import ca.odell.glazedlists.EventList;
 
 public class GUIBuilder {
@@ -39,45 +32,9 @@ public class GUIBuilder {
     private GridBagConstraints gbc;
     private String[] headers = {"Title", "Album", "Artist", "Duration"};
 
-    private ListSelectionListener trackListener = new ListSelectionListener() {
-        public void valueChanged(ListSelectionEvent event) {
-            // get value from hidden id column
-            // check if row exists because removing column when updating data will trigger
-            // valuechanged, causing IOB
-            int i = table.getSelectedRow();
-            if (i >= 0) {
-                Communicate.sendCmd("playid " + table.getModel().getValueAt(table.getSelectedRow(), 0).toString());
-            }
-        }
-    };
-
-    private TreeExpansionListener tel = new TreeExpansionListener() {
-        @Override
-        public void treeCollapsed(TreeExpansionEvent arg0) {
-        }
-
-        @Override
-        public void treeExpanded(TreeExpansionEvent arg0) {
-            
-            // add albums on expand
-            TreePath selectedPath = arg0.getPath();
-            DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) selectedPath.getLastPathComponent();
-            DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
-
-            if (selectedNode.getChildCount() == 1) {
-                String artist = selectedNode.toString();
-                Commands cmds = new Commands();
-                List<String> albumStringList = cmds.getList("list album \"" + artist + "\"");
-                for (String album : albumStringList) {
-                    model.insertNodeInto(new DefaultMutableTreeNode(album), selectedNode, 0);
-                }
-            }
-        }
-    };
-
     private DefaultTableModel tableModel = new DefaultTableModel() {
         private static final long serialVersionUID = 1L;
-
+        // disable table editing
         @Override
         public boolean isCellEditable(int row, int column) {
             return false;
@@ -85,7 +42,6 @@ public class GUIBuilder {
     };
 
     public void setTableData(List<String> rowData) {
-        // disable editing
         Integer[] ids = new Integer[rowData.size()];
         String[] titles = new String[rowData.size()];
         String[] artists = new String[rowData.size()];
@@ -93,6 +49,7 @@ public class GUIBuilder {
         String[] time = new String[rowData.size()];
 
         Gson gson = new Gson();
+        Helper helper = new Helper();
         int i = 0;
         for (String s : rowData) {    
             Track track = gson.fromJson(s, Track.class);
@@ -100,7 +57,7 @@ public class GUIBuilder {
             titles[i] = track.getTitle();
             artists[i] = track.getArtist();
             albums[i] = track.getAlbum();
-            time[i] = getMinutes(track.getTime());
+            time[i] = helper.getMinutes(track.getTime());
             i++;
         }
         tableModel.addColumn("id", ids);
@@ -112,11 +69,7 @@ public class GUIBuilder {
         table.removeColumn(table.getColumnModel().getColumn(0)); // hide id column  
     }
 
-    private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-
-    private String getMinutes(int time) {
-        return LocalTime.MIN.plusSeconds(time).format(formatter).toString();
-    }
+    
 
     public void build() {
         // main layout
@@ -144,11 +97,10 @@ public class GUIBuilder {
         table = new JTable(rows, headers);
         JScrollPane tableContainer = new JScrollPane(table);        
         table.setFillsViewportHeight(true);
-        table.getSelectionModel().addListSelectionListener(trackListener); 
 
         // artist list
-        Commands cmds = new Commands();
-        List<String> artistStringList = cmds.getList("list albumartist");
+        Helper helper = new Helper();
+        List<String> artistStringList = helper.cleanupList("list albumartist");
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("artists");
         for (String artist : artistStringList) {
             DefaultMutableTreeNode artistNode = new DefaultMutableTreeNode(artist);
@@ -160,7 +112,7 @@ public class GUIBuilder {
         tree = new JTree(root);
         tree.expandRow(0);
         tree.setRootVisible(false); // hide root node
-        tree.addTreeExpansionListener(tel);
+        
         JScrollPane artistContainer = new JScrollPane(tree); 
         
         // top row
@@ -177,9 +129,12 @@ public class GUIBuilder {
         // set listeners
         UpdateListener updateListener = new UpdateListener();
         updateMPDBtn.addActionListener(updateListener);
-        
-        LeftPaneListener leftPaneListener = new LeftPaneListener(table);
-        tree.addTreeSelectionListener(leftPaneListener);
+        AddToPlaylistListener addToPlaylistListener = new AddToPlaylistListener(table);
+        tree.addTreeSelectionListener(addToPlaylistListener);
+        GetAlbumListener getAlbumListener = new GetAlbumListener(tree);
+        tree.addTreeExpansionListener(getAlbumListener);
+        PlayTrackListener playTrackListener = new PlayTrackListener(table);
+        table.getSelectionModel().addListSelectionListener(playTrackListener); 
         
         // wrap up
         window.setLayout(new GridBagLayout());
@@ -189,8 +144,6 @@ public class GUIBuilder {
         addPart(window, controlPanel, 1, 2, 1, 2, 0.3, 1.0 );
         window.pack();
         window.setVisible(true); 
-
-       
     }
 
      private void addPart(JFrame window, JComponent comp, int x, int y, int gWidth, int gHeight, double weightx, double weighty) {

@@ -1,0 +1,43 @@
+
+package SunnyMPC.listeners;
+
+import java.util.List;
+
+import javax.swing.JTable;
+import javax.swing.JTree;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
+
+import SunnyMPC.Helper;
+
+public class GetAlbumListener implements TreeExpansionListener {
+    JTree tree;
+
+    public GetAlbumListener(JTree tree) {
+        this.tree = tree;
+    }
+    
+    @Override
+    public void treeCollapsed(TreeExpansionEvent arg0) {
+    }
+
+    @Override
+    public void treeExpanded(TreeExpansionEvent arg0) {       
+        // add albums on expand
+        TreePath selectedPath = arg0.getPath();
+        DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) selectedPath.getLastPathComponent();
+        DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+
+        if (selectedNode.getChildCount() == 1) {
+            String artist = selectedNode.toString();
+            Helper helper = new Helper();
+            List<String> albumStringList = helper.cleanupList("list album " + helper.escapeString(artist));
+            for (String album : albumStringList) {
+                model.insertNodeInto(new DefaultMutableTreeNode(album), selectedNode, 0);
+            }
+        }
+    }
+}

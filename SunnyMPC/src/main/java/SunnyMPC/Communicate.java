@@ -9,7 +9,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Communicate {
+public class Communicate extends Thread {
     static PrintWriter out;
     static BufferedReader serverResponse;
     static Socket socket;
@@ -23,7 +23,7 @@ public class Communicate {
         out.println(cmd);
         try {
             while ((fromServer = serverResponse.readLine()) != null && !fromServer.equals("OK")) {
-                System.out.println(fromServer);
+             //   System.out.println(fromServer);
                 if (fromServer.startsWith("ACK")) {
                     break;
                 }
@@ -45,8 +45,11 @@ public class Communicate {
     public static void connect(String ip, int port) {
         sIp = ip;
         sPort = port;
-        Runnable runnable =
-        () -> { System.out.println("Lambda Runnable running"); };
+        try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
         // connect to socket
         try {    
             socket = new Socket(ip, port);
@@ -57,7 +60,6 @@ public class Communicate {
         } catch (IOException e) {
             System.err.println("Couldn't get I/O for the connection to " + ip);
         }
-        Thread thread = new Thread(runnable);
-        thread.start();
+        
     }
 }

@@ -1,6 +1,6 @@
 package SunnyMPC;
 
-class Track {
+public class Track {
     private int id = 0;
     private String title = "";
     private String album = "";

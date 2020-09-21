@@ -11,7 +11,14 @@ public final class App {
     }
     
     public static void main(String[] args) {
-        Communicate.connect("192.168.1.87", 6600);
+        Runnable runnable = () -> { 
+            Communicate.connect("192.168.1.87", 6600); 
+        };
+        Thread thread = new Thread(runnable);
+        thread.start();
+
+        ServerScan ss = new ServerScan();
+     //   ss.scan();
         
         try {
         UIManager.setLookAndFeel(

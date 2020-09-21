@@ -1,4 +1,4 @@
-package SunnyMPC;
+package SunnyMPC.listeners;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,44 +7,37 @@ import javax.swing.JTable;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class LeftPaneListener implements TreeSelectionListener {
+import SunnyMPC.Communicate;
+import SunnyMPC.GUIBuilder;
+import SunnyMPC.Helper;
+import SunnyMPC.Track;
 
+public class AddToPlaylistListener implements TreeSelectionListener {
     JTable tree;
 
-    public LeftPaneListener(JTable tree) {
+    public AddToPlaylistListener(JTable tree) {
         this.tree = tree;
     }
     
-    public static String escapeString(String s) {
-        s = s.replaceAll("\\\\", "\\\\\\\\"); // escape backslashes
-        s = s.replaceAll("\"", "\\\\\""); // escape quotes
-        return '"' + s +  '"';   // put the whole thing in quotes
-    }
-
 	@Override
     public void valueChanged(TreeSelectionEvent arg0) {
         TreePath selectedPath = arg0.getPath();
         DefaultMutableTreeNode albumNode = (DefaultMutableTreeNode) selectedPath.getLastPathComponent();
         DefaultMutableTreeNode artistNode = (DefaultMutableTreeNode) selectedPath.getPathComponent(1);
 
-
         List<String> rowData = new ArrayList<String>();
         if (albumNode == null) {return;}
         
         if (albumNode.isLeaf()) {
-            System.out.println("isleaf");
+            Helper helper = new Helper();
             String selectedAlbum = albumNode.toString();
             String selectedArtist = artistNode.toString();
-            List<String> playlist = Communicate.sendCmd("command_list_begin\nclear\nsearchadd artist " + escapeString(selectedArtist) + " album " + escapeString(selectedAlbum) + "\nplaylistinfo\ncommand_list_end");
-            
-
+            List<String> playlist = Communicate.sendCmd("command_list_begin\nclear\nsearchadd artist " + helper.escapeString(selectedArtist) + " album " + helper.escapeString(selectedAlbum) + "\nplaylistinfo\ncommand_list_end");
             Track track = null;
             for (String row : playlist) {
                 if (row.startsWith("file:")) {
