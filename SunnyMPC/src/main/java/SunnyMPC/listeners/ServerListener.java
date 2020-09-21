@@ -3,12 +3,11 @@ package SunnyMPC.listeners;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import SunnyMPC.Communicate;
+import SunnyMPC.ServerScan;
 
-public class UpdateListener implements ActionListener {
-    @Override
+public class ServerListener implements ActionListener {
+	@Override
     public void actionPerformed(ActionEvent ae) {
-        Communicate.sendCmd("update");
-    }
-    
+        ServerScan.startThread();
+    }    
 }

@@ -1,5 +1,11 @@
 package SunnyMPC;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
@@ -11,15 +17,6 @@ public final class App {
     }
     
     public static void main(String[] args) {
-        Runnable runnable = () -> { 
-            Communicate.connect("192.168.1.87", 6600); 
-        };
-        Thread thread = new Thread(runnable);
-        thread.start();
-
-        ServerScan ss = new ServerScan();
-     //   ss.scan();
-        
         try {
         UIManager.setLookAndFeel(
             UIManager.getSystemLookAndFeelClassName());

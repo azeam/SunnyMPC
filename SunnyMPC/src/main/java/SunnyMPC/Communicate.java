@@ -9,17 +9,18 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Communicate extends Thread {
-    static PrintWriter out;
-    static BufferedReader serverResponse;
-    static Socket socket;
-    static int sPort;
-    static String sIp;
+public class Communicate {
+    private static PrintWriter out;
+    private static BufferedReader serverResponse;
+    private static Socket socket;
+    private static final int port = 6600;
+    public static String ip;
 
     public static List<String> sendCmd(String cmd) {
-        Communicate.connect(sIp, sPort);
+        connect();
         List<String> response = new ArrayList<String>();
         String fromServer;
+        if (out == null) {return response;}
         out.println(cmd);
         try {
             while ((fromServer = serverResponse.readLine()) != null && !fromServer.equals("OK")) {
@@ -42,14 +43,7 @@ public class Communicate extends Thread {
         return response;
     }
 
-    public static void connect(String ip, int port) {
-        sIp = ip;
-        sPort = port;
-        try {
-			Thread.sleep(5000);
-		} catch (InterruptedException e1) {
-			e1.printStackTrace();
-		}
+    public static void connect() {
         // connect to socket
         try {    
             socket = new Socket(ip, port);
@@ -60,6 +54,5 @@ public class Communicate extends Thread {
         } catch (IOException e) {
             System.err.println("Couldn't get I/O for the connection to " + ip);
         }
-        
     }
 }
