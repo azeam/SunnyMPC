@@ -7,9 +7,11 @@ import java.util.List;
 import javax.swing.SwingWorker;
 
 import SunnyMPC.Communicate;
+import SunnyMPC.Constants;
 import SunnyMPC.DisplayTable;
 import SunnyMPC.GUIBuilder;
 import SunnyMPC.Helper;
+import SunnyMPC.TrackInfo;
 
 public class ServerChangeListener implements ItemListener {
    @Override
@@ -28,10 +30,19 @@ public class ServerChangeListener implements ItemListener {
             protected Boolean doInBackground() throws Exception { 
                GUIBuilder gui = new GUIBuilder();
                Helper helper = new Helper();
-               List<String> artistStringList = helper.cleanupList("list albumartist");
+               List<String> artistStringList = helper.cleanupList(Constants.listartists);
                gui.fillAlbumList(artistStringList);
-               DisplayTable.displayTable();
+
+               // display track info in case something is playing since before
+               gui.setTrackText("");
+               TrackInfo.run = false;
+               TrackInfo.getTrackInfo();   
                return true;
+            }
+
+            @Override
+            protected void done() { 
+               DisplayTable.displayTable();
             }
          };
          sw.execute();

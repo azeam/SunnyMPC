@@ -1,6 +1,7 @@
 package SunnyMPC;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -19,13 +20,9 @@ import com.google.gson.JsonObject;
 
 public class TrackInfo {
     public static boolean run;
-    private String mbalbumId;
+    public static String mbalbumId;
 
-    public TrackInfo(String mbalbumId) {
-        this.mbalbumId = mbalbumId;
-    }
-
-    public static void getTrackInfo(Track track) {
+    public static void getTrackInfo() {
         Helper helper = new Helper();
 
         SwingWorker<Integer, String> sw = new SwingWorker<Integer, String>() {
@@ -35,54 +32,64 @@ public class TrackInfo {
                                     // (causing it not to stop and several loops running when changing track)
                 run = true;
                 Communicate.connect();
-                List<String> status = Communicate.getStatus("status");
-                List<String> current = Communicate.getStatus("currentsong");
+                List<String> status = Communicate.getStatus(Constants.status);
+                List<String> current = Communicate.getStatus(Constants.currentSong);
+                TrackBuilder builder = new TrackBuilder(current);
+                Track track = builder.getTrack();
                 List<String> checkCurrent = new ArrayList<String>();
 
+                mbalbumId = track.getMbalbumId();
+                String path = mbalbumId + ".jpg";
+                File checkFile = new File(path);
+                if (mbalbumId.length() > 0 && !checkFile.exists()) {
+                    getCover(Constants.coverBaseUrl + mbalbumId);
+                } else if (mbalbumId.length() > 0 && checkFile.exists()) {
+                    GUIBuilder guiBuilder = new GUIBuilder();
+                    guiBuilder.showAlbumImage(path);
+                }
+
                 while (status.contains("state: play") && run) {
-                    checkCurrent = Communicate.getStatus("currentsong");
-                    // if song ends and new song starts, build new track object and restart worker to get new info
+                    checkCurrent = Communicate.getStatus(Constants.currentSong);
+                    // if song ends and new song starts, build new track object and restart worker
+                    // to get new info
                     if (!current.equals(checkCurrent)) {
-                        TrackBuilder builder = new TrackBuilder(checkCurrent);
-                        Track track = builder.getTrack();
-                        getTrackInfo(track);
+                        builder = new TrackBuilder(checkCurrent);
+                        track = builder.getTrack();
+                        getTrackInfo();
                         run = false;
-                    }
-                    else {
+                    } else {
                         // TODO: clean up and check for invalid values
-                        status = Communicate.getStatus("status");
+                        status = Communicate.getStatus(Constants.status);
                         String elapsed = "";
                         String audio = "";
                         String bitrate = "";
                         for (String row : status) {
                             if (row.startsWith("elapsed:")) {
                                 Double dElapsed = Double.parseDouble(row.substring(row.indexOf(" ") + 1));
-                                int iElapsed = (int) Math.floor(dElapsed); 
+                                int iElapsed = (int) Math.floor(dElapsed);
                                 elapsed = helper.getMinutes(iElapsed);
-                            }
-                            else if (row.startsWith("audio:")) {
+                            } else if (row.startsWith("audio:")) {
                                 audio = row.substring(row.indexOf(" ") + 1);
-                            }
-                            else if (row.startsWith("bitrate:")) {
+                            } else if (row.startsWith("bitrate:")) {
                                 bitrate = row.substring(row.indexOf(" ") + 1);
                             }
                         }
                         String[] aAudio = audio.split(":");
                         GUIBuilder guiBuilder = new GUIBuilder();
-                        guiBuilder.setTrackText(track.getArtist() + " - " + track.getTitle() + "\n" + 
-                        elapsed + " of " + helper.getMinutes(track.getTime()) + "\n" + 
-                        aAudio[0] + " Hz " + aAudio[1] + " bit " + aAudio[2] + " channels. Bitrate " + bitrate + " kbps");
+                        guiBuilder.setTrackText(track.getArtist() + " - " + track.getTitle() + "\n" + elapsed + " of "
+                                + helper.getMinutes(track.getTime()) + "\n" + aAudio[0] + " Hz " + aAudio[1] + " bit "
+                                + aAudio[2] + " channels. Bitrate " + bitrate + " kbps");
                     }
                     Thread.sleep(1000);
                 }
                 Communicate.disconnect();
                 return 0;
-			}
+            }
         };
         sw.execute();
     }
 
-    public String getCover(String url) {
+    public static String getCover(String url) {
         SwingWorker<String, String> sw = new SwingWorker<String, String>() {
 
             @Override

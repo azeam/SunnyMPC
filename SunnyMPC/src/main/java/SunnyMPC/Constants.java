@@ -11,6 +11,7 @@ public class Constants {
     public static final String previous = "previous";
     public static final String currentSong = "currentsong";
     public static final String stop = "stop";
+    public static final String status = "status";
     public static final String update = "update";
     public static final String noImage = "noimage.jpg";
     public static final String servers = "servers.txt";
@@ -18,4 +19,5 @@ public class Constants {
     public static final String ok = "OK";
     public static final String ack = "ACK";
     public static final String playlistInfo = "playlistinfo";
+    public static final String listartists = "list albumartist";
 }
