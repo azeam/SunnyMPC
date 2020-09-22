@@ -17,7 +17,6 @@ public class AddToPlaylistListener implements TreeSelectionListener {
     public AddToPlaylistListener(JTable tree) {
         this.tree = tree;
     }
-    
 
 	@Override
     public void valueChanged(TreeSelectionEvent arg0) {
@@ -26,7 +25,7 @@ public class AddToPlaylistListener implements TreeSelectionListener {
         DefaultMutableTreeNode artistNode = (DefaultMutableTreeNode) selectedPath.getPathComponent(1);
 
         // when clicking an album, get the artist/album name and add to playlist
-        if (albumNode!= null && albumNode.isLeaf()) {
+        if (albumNode != null && albumNode.isLeaf()) {
             Helper helper = new Helper();
             String selectedAlbum = albumNode.toString();
             String selectedArtist = artistNode.toString();

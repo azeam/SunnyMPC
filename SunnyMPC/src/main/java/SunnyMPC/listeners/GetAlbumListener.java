@@ -4,6 +4,7 @@ package SunnyMPC.listeners;
 import java.util.List;
 
 import javax.swing.JTree;
+import javax.swing.SwingWorker;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -20,8 +21,7 @@ public class GetAlbumListener implements TreeExpansionListener {
     }
     
     @Override
-    public void treeCollapsed(TreeExpansionEvent arg0) {
-    }
+    public void treeCollapsed(TreeExpansionEvent arg0) {}
 
     @Override
     public void treeExpanded(TreeExpansionEvent arg0) {       
@@ -32,12 +32,25 @@ public class GetAlbumListener implements TreeExpansionListener {
 
         if (selectedNode.getChildCount() == 1) {
             String artist = selectedNode.toString();
+            getServerData(model, selectedNode, artist);
+        }
+    }
+
+    private void getServerData(DefaultTreeModel model, DefaultMutableTreeNode selectedNode, String artist) {
+        SwingWorker<Boolean, Boolean> sw = new SwingWorker<Boolean, Boolean>() { 
+           @Override
+           protected Boolean doInBackground() throws Exception { 
             Helper helper = new Helper();
             List<String> albumStringList = helper.cleanupList("list album " + helper.escapeString(artist));
             for (String album : albumStringList) {
                 DefaultMutableTreeNode leaf = new DefaultMutableTreeNode(album);
                 model.insertNodeInto(leaf, selectedNode, 0);
             }
-        }
+                return null;
+           }
+        };
+        sw.execute();
     }
+
+    
 }

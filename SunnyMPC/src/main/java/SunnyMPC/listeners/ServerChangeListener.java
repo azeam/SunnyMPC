@@ -18,8 +18,7 @@ public class ServerChangeListener implements ItemListener {
    public void itemStateChanged(ItemEvent arg0) {
       // get and display info from server when changing server
       if (arg0.getStateChange() == ItemEvent.SELECTED) {
-         Object server = arg0.getItem();
-         Communicate.ip = server.toString();
+         Communicate.ip = arg0.getItem().toString();
          getServerData();
       }
    }   
