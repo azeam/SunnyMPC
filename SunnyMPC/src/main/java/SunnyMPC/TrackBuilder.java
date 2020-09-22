@@ -18,10 +18,11 @@ public class TrackBuilder {
         return tracks;
     }
 
-    public TrackBuilder(List<String> playlist) {
+    public TrackBuilder(List<String> list) {
         track = new Track();
-        for (String row : playlist) {
+        for (String row : list) {
             if (row.startsWith("file:")) {
+                // for table, split list (make new track object) on new file line
                 track = new Track();
             }
             else if (row.startsWith("Title:")) {
@@ -50,6 +51,7 @@ public class TrackBuilder {
             }
             else if (row.startsWith("Id: ")) {
                 track.setId(Integer.parseInt(row.substring(row.indexOf(" ") + 1)));
+                // write json data for table handling
                 ObjectMapper mapper = new ObjectMapper();
                 String jsonString = "";
                 try {

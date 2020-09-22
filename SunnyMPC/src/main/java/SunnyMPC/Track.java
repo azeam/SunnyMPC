@@ -1,5 +1,6 @@
 package SunnyMPC;
 
+// the track object, used to save and retrieve information about the tracks
 public class Track {
     private int id = 0;
     private String title = "";

@@ -12,12 +12,14 @@ public class Helper {
         return LocalTime.MIN.plusSeconds(time).format(formatter).toString();
     }
 
+    // the search strings need to be properly escaped
     public String escapeString(String s) {
         s = s.replaceAll("\\\\", "\\\\\\\\"); // escape backslashes
         s = s.replaceAll("\"", "\\\\\""); // escape quotes
         return '"' + s +  '"';   // put the whole thing in quotes
     }
 
+    // remove title for each row
     public List<String> cleanupList(String cmd) {
         List<String> list = new ArrayList<String>();
         for (String row : Communicate.sendCmd(cmd)) {

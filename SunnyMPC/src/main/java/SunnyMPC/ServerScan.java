@@ -24,6 +24,7 @@ public class ServerScan {
             protected String[] doInBackground() throws Exception { 
                 List<String> serversList = new ArrayList<String>();
                 Enumeration<NetworkInterface> nets = null;
+                // get network interfaces, can be connected using wifi/ethernet
                 try {
                     nets = NetworkInterface.getNetworkInterfaces();
                 } catch (SocketException e1) {
@@ -31,16 +32,19 @@ public class ServerScan {
                 }
                 for (NetworkInterface netint : Collections.list(nets)) {
                     try {
+                        // get ip base for each connected interface
                         String ip = getLANRange(netint);
                         if (ip.length() > 1) {
+                            // checking 1-255 range
                             for (int ipEnd = 1; ipEnd <= 255; ipEnd++) {
                                 try {
                                 Socket socket = new Socket();
-                                socket.connect(new InetSocketAddress(ip + ipEnd, Communicate.port), 50);
+                                // connect to each IP address on port 6600 and confirm the "MPD OK" response, if so add to list
+                                socket.connect(new InetSocketAddress(ip + ipEnd, Constants.port), 50);
                                 String fromServer;
                                 BufferedReader serverResponse = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                                 try {
-                                    if ((fromServer = serverResponse.readLine()) != null && fromServer.startsWith("OK MPD")) {
+                                    if ((fromServer = serverResponse.readLine()) != null && fromServer.startsWith(Constants.okMpd)) {
                                         System.out.println("MPD server at " + ip + ipEnd + " found");
                                         serversList.add(ip + ipEnd);
                                     }
@@ -65,7 +69,7 @@ public class ServerScan {
                     String[] servers = get();
                     if (servers.length > 0) {
                         try {
-                            FileWriter saveServers = new FileWriter("servers.txt");
+                            FileWriter saveServers = new FileWriter(Constants.servers);
                             for (String server : servers) {
                                 saveServers.write(server + "\n");
                             }

@@ -22,6 +22,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTree;
 import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableModel;
@@ -45,19 +46,12 @@ public class GUIBuilder {
     static JScrollPane artistContainer;
     static JFrame window;
     static JLabel albumPic;
+    static JTextArea trackInfoText;
     private GridBagConstraints gbc;
     private String[] headers = { "Title", "Album", "Artist", "Duration" };
     static DefaultMutableTreeNode root = new DefaultMutableTreeNode("artists");
 
-    private DefaultTableModel tableModel = new DefaultTableModel() {
-        private static final long serialVersionUID = 1L;
-
-        // disable table editing
-        @Override
-        public boolean isCellEditable(int row, int column) {
-            return false;
-        }
-    };
+    
 
     public void fillServers(String[] servers) {
         serverCombobox.removeAllItems();
@@ -126,27 +120,32 @@ public class GUIBuilder {
 
         // bottom row
         JPanel controlPanel = new JPanel();
+        JButton clearBtn = new JButton("Clear playlist");
         JButton stopBtn = new JButton("Stop");
         JButton nextBtn = new JButton("Next");
         JButton previousBtn = new JButton("Previous");
         Box controlBox = Box.createHorizontalBox();
+        controlBox.add(clearBtn);
         controlBox.add(stopBtn);
         controlBox.add(nextBtn);
         controlBox.add(previousBtn);
         controlPanel.add(controlBox);
+        trackInfoText = new JTextArea(5, 20);
+        trackInfoText.setEditable(false);
 
         // set listeners
-        updateMPDBtn.addActionListener(new CommandListener("update"));
+        clearBtn.addActionListener(new CommandListener(Constants.clear));
+        updateMPDBtn.addActionListener(new CommandListener(Constants.update));
         updateServers.addActionListener(new ServerListener()); // TODO: spinner while updating
-        stopBtn.addActionListener(new CommandListener("stop"));
-        nextBtn.addActionListener(new CommandListener("next"));
-        previousBtn.addActionListener(new CommandListener("previous"));
+        stopBtn.addActionListener(new CommandListener(Constants.stop));
+        nextBtn.addActionListener(new CommandListener(Constants.next));
+        previousBtn.addActionListener(new CommandListener(Constants.previous));
         tree.addTreeSelectionListener(new AddToPlaylistListener(table));
         tree.addTreeExpansionListener(new GetAlbumListener(tree));
         table.getSelectionModel().addListSelectionListener(new PlayTrackListener(table));
 
         // default album cover
-        albumPic = new JLabel(new ImageIcon("noimage.jpg"));
+        albumPic = new JLabel(new ImageIcon(Constants.noImage));
 
         // wrap up
         window.setLayout(new GridBagLayout());
@@ -154,14 +153,14 @@ public class GUIBuilder {
         addPart(window, tableContainer, 1, 1, 1, 1, 0.7, 0.3);
         addPart(window, artistContainer, 0, 1, 1, 2, 0.3, 1.0);
         addPart(window, controlPanel, 1, 2, 1, 2, 0.3, 1.0);
-        addPart(window, albumPic, 0, 2, 1, 2, 0.3, 1.0 );    
+        addPart(window, albumPic, 0, 2, 1, 2, 0.3, 1.0 );  
+        addPart(window, trackInfoText, 1, 4, 1, 2, 0.3, 1.0 );   
         window.pack();
         window.setVisible(true);
         findServers();
     }
 
     public void showAlbumImage(String path) {
-        System.out.println(path);
         BufferedImage cover = null;
         try {
             cover = ImageIO.read(new File(path));
@@ -175,10 +174,14 @@ public class GUIBuilder {
         }
     }
 
+    public void setTrackText(String info) {
+        trackInfoText.setText(info);
+    }
+
     private void findServers() {
         List<String> serverList = new ArrayList<String>();
         try {
-            File savedServers = new File("servers.txt");
+            File savedServers = new File(Constants.servers);
             Scanner sc = new Scanner(savedServers);
             while (sc.hasNextLine()) {
               String data = sc.nextLine();
@@ -197,6 +200,16 @@ public class GUIBuilder {
             ServerScan.startThread();
         }     
     }
+
+    private DefaultTableModel tableModel = new DefaultTableModel() {
+        private static final long serialVersionUID = 1L;
+
+        // disable table editing
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            return false;
+        }
+    };
 
     private void addPart(JFrame window, JComponent comp, int x, int y, int gWidth, int gHeight, double weightx, double weighty) {
         gbc.gridx = x;

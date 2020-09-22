@@ -13,21 +13,21 @@ public class Communicate {
     private static PrintWriter out;
     private static BufferedReader serverResponse;
     private static Socket socket;
-    public static final int port = 6600;
     public static String ip;
 
+    // get status, will keep the connection alive, used for long polling the current track information
     public static List<String> getStatus(String cmd) {
         List<String> response = new ArrayList<String>();
         String fromServer;
         if (out == null) {return response;}
         out.println(cmd);
         try {
-            while ((fromServer = serverResponse.readLine()) != null && !fromServer.equals("OK")) {
+            while ((fromServer = serverResponse.readLine()) != null && !fromServer.equals(Constants.ok)) {
             //    System.out.println(fromServer);
-                if (fromServer.startsWith("ACK")) {
+                if (fromServer.startsWith(Constants.ack)) {
                     break;
                 }
-                if (!fromServer.startsWith("OK MPD")) {
+                if (!fromServer.startsWith(Constants.okMpd)) {
                     response.add(fromServer);
                 }
             }
@@ -37,6 +37,7 @@ public class Communicate {
         return response;
     }
 
+    // send simple command, this will connect and disconnect from the socket
     public static List<String> sendCmd(String cmd) {
         connect();
         List<String> response = getStatus(cmd);
@@ -44,10 +45,10 @@ public class Communicate {
         return response;
     }
 
+    // connect to socket
     public static void connect() {
-        // connect to socket
         try {    
-            socket = new Socket(ip, port);
+            socket = new Socket(ip, Constants.port);
             out = new PrintWriter(socket.getOutputStream(), true);
             serverResponse = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         } catch (UnknownHostException e) {
@@ -57,6 +58,7 @@ public class Communicate {
         }
     }
 
+    // disconnect from socket
 	public static void disconnect() {
         try {
             socket.close();

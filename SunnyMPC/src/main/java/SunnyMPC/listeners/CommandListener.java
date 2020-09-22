@@ -6,6 +6,8 @@ import java.io.File;
 import java.util.List;
 
 import SunnyMPC.Communicate;
+import SunnyMPC.Constants;
+import SunnyMPC.DisplayTable;
 import SunnyMPC.GUIBuilder;
 import SunnyMPC.Track;
 import SunnyMPC.TrackBuilder;
@@ -13,7 +15,8 @@ import SunnyMPC.TrackInfo;
 
 public class CommandListener implements ActionListener {
     private String cmd;
-    
+    GUIBuilder guiBuilder = new GUIBuilder();
+            
     public CommandListener(String cmd) {
         this.cmd = cmd;
 	}
@@ -21,8 +24,10 @@ public class CommandListener implements ActionListener {
 	@Override
     public void actionPerformed(ActionEvent ae) {
         Communicate.sendCmd(cmd);
-        if (cmd.equals("next")) {
-            List<String> current = Communicate.sendCmd("currentsong");
+        
+        // update track data when going back/forward and send it to the track info handler for display
+        if (cmd.equals(Constants.next) || cmd.equals(Constants.previous)) {
+            List<String> current = Communicate.sendCmd(Constants.currentSong);
             TrackBuilder builder = new TrackBuilder(current);
             Track track = builder.getTrack();
             String mbalbumId = track.getMbalbumId();
@@ -31,14 +36,18 @@ public class CommandListener implements ActionListener {
             String path = mbalbumId + ".jpg";
             File checkFile = new File(path);
             if (mbalbumId.length() > 0 && !checkFile.exists()) {
-                trackInfo.getCover("https://coverartarchive.org/release/" + mbalbumId);
+                trackInfo.getCover(Constants.coverBaseUrl + mbalbumId);
             }
             else if (mbalbumId.length() > 0 && checkFile.exists()) {
-                GUIBuilder guiBuilder = new GUIBuilder();
                 guiBuilder.showAlbumImage(path);
             }
-            
             TrackInfo.getTrackInfo(track);
+        }
+        else if (cmd.equals(Constants.clear)) {
+            DisplayTable.displayTable();
+        }
+        else if (cmd.equals(Constants.stop)) {
+            guiBuilder.setTrackText("");
         }
     }
 }

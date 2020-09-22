@@ -24,6 +24,7 @@ public final class App {
         catch (IllegalAccessException e) {
             System.out.println(e.getMessage());
         }
+        // build window
         GUIBuilder builder = new GUIBuilder();
         builder.build();
     }

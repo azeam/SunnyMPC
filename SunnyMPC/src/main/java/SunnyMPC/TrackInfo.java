@@ -7,6 +7,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -25,38 +26,57 @@ public class TrackInfo {
     }
 
     public static void getTrackInfo(Track track) {
+        Helper helper = new Helper();
+
         SwingWorker<Integer, String> sw = new SwingWorker<Integer, String>() {
             @Override
             protected Integer doInBackground() throws Exception {
-                Thread.sleep(1000); // this will ensure that run in not set to true while sleeping in while loop
+                Thread.sleep(1000); // this will ensure that run is not set to true while sleeping in while loop
                                     // (causing it not to stop and several loops running when changing track)
                 run = true;
-                int id = track.getId();
                 Communicate.connect();
                 List<String> status = Communicate.getStatus("status");
-                System.out.println("status" + status);
-                System.out.println("run" + run);
+                List<String> current = Communicate.getStatus("currentsong");
+                List<String> checkCurrent = new ArrayList<String>();
 
                 while (status.contains("state: play") && run) {
-                    status = Communicate.getStatus("status");
-                    System.out.println("Current track id" + id);
-                    System.out.println("Current track title" + track.getTitle());
-                    for (String row : status) {
-                        if (row.startsWith("elapsed:")) {
-                            System.out.println((row.substring(row.indexOf(" ") + 1)));
+                    checkCurrent = Communicate.getStatus("currentsong");
+                    // if song ends and new song starts, build new track object and restart worker to get new info
+                    if (!current.equals(checkCurrent)) {
+                        TrackBuilder builder = new TrackBuilder(checkCurrent);
+                        Track track = builder.getTrack();
+                        getTrackInfo(track);
+                        run = false;
+                    }
+                    else {
+                        // TODO: clean up and check for invalid values
+                        status = Communicate.getStatus("status");
+                        String elapsed = "";
+                        String audio = "";
+                        String bitrate = "";
+                        for (String row : status) {
+                            if (row.startsWith("elapsed:")) {
+                                Double dElapsed = Double.parseDouble(row.substring(row.indexOf(" ") + 1));
+                                int iElapsed = (int) Math.floor(dElapsed); 
+                                elapsed = helper.getMinutes(iElapsed);
+                            }
+                            else if (row.startsWith("audio:")) {
+                                audio = row.substring(row.indexOf(" ") + 1);
+                            }
+                            else if (row.startsWith("bitrate:")) {
+                                bitrate = row.substring(row.indexOf(" ") + 1);
+                            }
                         }
-                        else if (row.startsWith("duration:")) {
-                            System.out.println((row.substring(row.indexOf(" ") + 1)));
-                        }
-                        else if (row.startsWith("audio:")) {
-                            System.out.println((row.substring(row.indexOf(" ") + 1)));
-                        }
+                        String[] aAudio = audio.split(":");
+                        GUIBuilder guiBuilder = new GUIBuilder();
+                        guiBuilder.setTrackText(track.getArtist() + " - " + track.getTitle() + "\n" + 
+                        elapsed + " of " + helper.getMinutes(track.getTime()) + "\n" + 
+                        aAudio[0] + " Hz " + aAudio[1] + " bit " + aAudio[2] + " channels. Bitrate " + bitrate + " kbps");
                     }
                     Thread.sleep(1000);
                 }
-                System.out.println("Disconnecting in TrackInfo");
                 Communicate.disconnect();
-                return id;
+                return 0;
 			}
         };
         sw.execute();
@@ -74,12 +94,14 @@ public class TrackInfo {
                 con.connect();
                 con.getInputStream();
 
+                // follow redirects in the json response automatically by restarting worker on 30* response
                 if (con.getResponseCode() == 307 || con.getResponseCode() == HttpURLConnection.HTTP_MOVED_PERM
                         || con.getResponseCode() == HttpURLConnection.HTTP_MOVED_TEMP) {
                     String redirectUrl = con.getHeaderField("Location");
-                    System.out.println(redirectUrl);
                     return getCover(redirectUrl);
-                } else if (con.getResponseCode() == 200) {
+                } 
+                // if valid json in the redirect is found, parse it, download the image and display it
+                else if (con.getResponseCode() == 200) {
                     br = new BufferedReader(new InputStreamReader(con.getInputStream()));
                     sb = new StringBuilder();
                     String output;
