@@ -28,7 +28,7 @@ public class TrackInfo {
         SwingWorker<Integer, String> sw = new SwingWorker<Integer, String>() {
             @Override
             protected Integer doInBackground() throws Exception {
-                Thread.sleep(1000); // this will ensure that run is not set to true while sleeping in while loop
+                Thread.sleep(Constants.sleeptime * 2); // this will ensure that run is not set to true while sleeping in while loop
                                     // (causing it not to stop and several loops running when changing track)
                 run = true;
                 Communicate.connect();
@@ -80,7 +80,7 @@ public class TrackInfo {
                                 + helper.getMinutes(track.getTime()) + "\n" + aAudio[0] + " Hz " + aAudio[1] + " bit "
                                 + aAudio[2] + " channels. Bitrate " + bitrate + " kbps");
                     }
-                    Thread.sleep(1000);
+                    Thread.sleep(Constants.sleeptime);
                 }
                 Communicate.disconnect();
                 return 0;

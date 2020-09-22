@@ -51,8 +51,6 @@ public class GUIBuilder {
     private String[] headers = { "Title", "Album", "Artist", "Duration" };
     static DefaultMutableTreeNode root = new DefaultMutableTreeNode("artists");
 
-    
-
     public void fillServers(String[] servers) {
         serverCombobox.removeAllItems();
         serverCombobox.addItem("");
@@ -77,7 +75,7 @@ public class GUIBuilder {
 
     public void setTableData(List<Object[]> rowData) {
         tableModel.addColumn("id", rowData.get(0));
-        tableModel.addColumn("mbAlbum", rowData.get(1));
+        tableModel.addColumn("mbAlbum", rowData.get(1)); // TODO: I think this can be removed now
         tableModel.addColumn(headers[0], rowData.get(2));
         tableModel.addColumn(headers[1], rowData.get(3));
         tableModel.addColumn(headers[2], rowData.get(4));
