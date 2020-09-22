@@ -49,7 +49,7 @@ public class AddToPlaylistListener implements TreeSelectionListener {
                 if (albumNode.isLeaf()) {
                     String selectedAlbum = albumNode.toString();
                     String selectedArtist = artistNode.toString();
-                    List<String> playlist = Communicate.sendCmd("command_list_begin\nclear\nsearchadd artist " + helper.escapeString(selectedArtist) + " album " + helper.escapeString(selectedAlbum) + "\nplaylistinfo\ncommand_list_end");
+                    List<String> playlist = Communicate.sendCmd("command_list_begin\nclear\nfindadd artist " + helper.escapeString(selectedArtist) + " album " + helper.escapeString(selectedAlbum) + "\nplaylistinfo\ncommand_list_end");
                     Track track = null;
                     for (String row : playlist) {
                         if (row.startsWith("file:")) {
@@ -65,10 +65,11 @@ public class AddToPlaylistListener implements TreeSelectionListener {
                             track.setArtist(row.substring(row.indexOf(" ") + 1));
                         }
                         else if (row.startsWith("MUSICBRAINZ_ALBUMID:")) {
-                            track.setMBAlbumId(row.substring(row.indexOf(" ") + 1));
+                            track.setMbalbumId(row.substring(row.indexOf(" ") + 1));
+                            
                         }
                         else if (row.startsWith("MUSICBRAINZ_ALBUMARTISTID:")) {
-                            track.setMBArtistId(row.substring(row.indexOf(" ") + 1));
+                            track.setMbartistId(row.substring(row.indexOf(" ") + 1));
                         }
                         else if (row.startsWith("duration:")) {
                             track.setDuration(Double.parseDouble(row.substring(row.indexOf(" ") + 1)));
@@ -93,7 +94,8 @@ public class AddToPlaylistListener implements TreeSelectionListener {
                 String[] titles = new String[rowData.size()];
                 String[] artists = new String[rowData.size()];
                 String[] albums = new String[rowData.size()];
-                String[] time = new String[rowData.size()];
+                String[] times = new String[rowData.size()];
+                String[] mbAlbums = new String[rowData.size()];
 
                 Gson gson = new Gson();
                 int i = 0;
@@ -103,15 +105,17 @@ public class AddToPlaylistListener implements TreeSelectionListener {
                     titles[i] = track.getTitle();
                     artists[i] = track.getArtist();
                     albums[i] = track.getAlbum();
-                    time[i] = helper.getMinutes(track.getTime());
+                    times[i] = helper.getMinutes(track.getTime());
+                    mbAlbums[i] = track.getMbalbumId();
                     i++;
                 }
                 List<Object[]> data = new ArrayList<Object[]>();
                 data.add(ids);
+                data.add(mbAlbums);
                 data.add(titles);
-                data.add(artists);
                 data.add(albums);
-                data.add(time);
+                data.add(artists);
+                data.add(times);
                 return data; 
             }
 

@@ -5,8 +5,8 @@ public class Track {
     private String title = "";
     private String album = "";
     private String artist = "";
-    private String MBAlbumId = "";
-    private String MBArtistId = "";
+    private String mbalbumId = "";
+    private String mbartistId = "";
     private int time = 0;
     private double duration = 0;
 
@@ -34,17 +34,17 @@ public class Track {
     public void setAlbum(String album) {
         this.album = album;
     }
-    public String getMBAlbumId() {
-        return MBAlbumId;
+    public String getMbalbumId() {
+        return mbalbumId;
     }
-    public void setMBAlbumId(String MBAlbumId) {
-        this.MBAlbumId = MBAlbumId;
+    public void setMbalbumId(String mbalbumId) {
+        this.mbalbumId = mbalbumId;
     }
-    public String getMBArtistId() {
-        return MBArtistId;
+    public String getMbartistId() {
+        return mbartistId;
     }
-    public void setMBArtistId(String MBArtistId) {
-        this.MBArtistId = MBArtistId;
+    public void setMbartistId(String mbartistId) {
+        this.mbartistId = mbartistId;
     }
     public int getTime() {
         return time;

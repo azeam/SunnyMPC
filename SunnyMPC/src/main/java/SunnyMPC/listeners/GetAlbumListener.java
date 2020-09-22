@@ -3,6 +3,7 @@ package SunnyMPC.listeners;
 
 import java.util.List;
 
+import javax.swing.ImageIcon;
 import javax.swing.JTree;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
@@ -35,7 +36,8 @@ public class GetAlbumListener implements TreeExpansionListener {
             Helper helper = new Helper();
             List<String> albumStringList = helper.cleanupList("list album " + helper.escapeString(artist));
             for (String album : albumStringList) {
-                model.insertNodeInto(new DefaultMutableTreeNode(album), selectedNode, 0);
+                DefaultMutableTreeNode leaf = new DefaultMutableTreeNode(album);
+                model.insertNodeInto(leaf, selectedNode, 0);
             }
         }
     }

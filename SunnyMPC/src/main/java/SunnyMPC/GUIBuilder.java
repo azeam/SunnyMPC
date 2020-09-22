@@ -3,17 +3,22 @@ package SunnyMPC;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import javax.imageio.ImageIO;
 import javax.swing.Box;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -22,8 +27,6 @@ import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-
-import com.google.gson.Gson;
 
 import SunnyMPC.listeners.AddToPlaylistListener;
 import SunnyMPC.listeners.CommandListener;
@@ -40,12 +43,14 @@ public class GUIBuilder {
     static JComboBox<String> serverCombobox;
     static List<String> artistList;
     static JScrollPane artistContainer;
+    static JFrame window;
     private GridBagConstraints gbc;
-    private String[] headers = {"Title", "Album", "Artist", "Duration"};
+    private String[] headers = { "Title", "Album", "Artist", "Duration" };
     static DefaultMutableTreeNode root = new DefaultMutableTreeNode("artists");
 
     private DefaultTableModel tableModel = new DefaultTableModel() {
         private static final long serialVersionUID = 1L;
+
         // disable table editing
         @Override
         public boolean isCellEditable(int row, int column) {
@@ -55,20 +60,19 @@ public class GUIBuilder {
 
     public void fillServers(String[] servers) {
         serverCombobox.removeAllItems();
-        for(String server : servers) {
+        serverCombobox.addItem("");
+        for (String server : servers) {
             serverCombobox.addItem(server);
         }
         serverCombobox.addItemListener(new ServerChangeListener());
     }
 
-    public void fillAlbumList() {
-        Helper helper = new Helper();
-        List<String> artistStringList = helper.cleanupList("list albumartist");
+    public void fillAlbumList(List<String> artistStringList) {
         root.removeAllChildren();
         for (String artist : artistStringList) {
             DefaultMutableTreeNode artistNode = new DefaultMutableTreeNode(artist);
             root.add(artistNode);
-            // add empty line to show chevron
+            // add empty line to show chevron, hacky but works
             DefaultMutableTreeNode albumNode = new DefaultMutableTreeNode("");
             artistNode.add(albumNode);
         }
@@ -78,24 +82,26 @@ public class GUIBuilder {
 
     public void setTableData(List<Object[]> rowData) {
         tableModel.addColumn("id", rowData.get(0));
-        tableModel.addColumn(headers[0], rowData.get(1));
-        tableModel.addColumn(headers[1], rowData.get(2));
-        tableModel.addColumn(headers[2], rowData.get(3));
-        tableModel.addColumn(headers[3], rowData.get(4));
-        table.setModel(tableModel); 
-        table.removeColumn(table.getColumnModel().getColumn(0)); // hide id column  
+        tableModel.addColumn("mbAlbum", rowData.get(1));
+        tableModel.addColumn(headers[0], rowData.get(2));
+        tableModel.addColumn(headers[1], rowData.get(3));
+        tableModel.addColumn(headers[2], rowData.get(4));
+        tableModel.addColumn(headers[3], rowData.get(5));
+        table.setModel(tableModel);
+        table.removeColumn(table.getColumnModel().getColumn(0)); // hide id column
+        table.removeColumn(table.getColumnModel().getColumn(0)); // hide musicbrainz album id column
     }
 
     public void build() {
         // main layout
-        JFrame window = new JFrame("Sunny MPC");
+        window = new JFrame("Sunny MPC");
         window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        gbc = new GridBagConstraints ();
-        gbc.anchor = GridBagConstraints.FIRST_LINE_START;   
-        gbc.insets = new Insets( hGap, vGap, hGap, vGap ); 
+        gbc = new GridBagConstraints();
+        gbc.anchor = GridBagConstraints.FIRST_LINE_START;
+        gbc.insets = new Insets(hGap, vGap, hGap, vGap);
 
         // top row
-        JPanel topPanel = new JPanel(); 
+        JPanel topPanel = new JPanel();
         serverCombobox = new JComboBox<String>();
         JButton updateMPDBtn = new JButton("Update MPD");
         JButton updateServers = new JButton("Update servers");
@@ -108,17 +114,17 @@ public class GUIBuilder {
         // table
         Object[][] rows = new Object[][] {};
         table = new JTable(rows, headers);
-        JScrollPane tableContainer = new JScrollPane(table);        
+        JScrollPane tableContainer = new JScrollPane(table);
         table.setFillsViewportHeight(true);
 
         // artist list
         tree = new JTree(root);
         tree.expandRow(0);
         tree.setRootVisible(false); // hide root node
-        artistContainer = new JScrollPane(tree); 
-        
+        artistContainer = new JScrollPane(tree);
+
         // bottom row
-        JPanel controlPanel = new JPanel(); 
+        JPanel controlPanel = new JPanel();
         JButton stopBtn = new JButton("Stop");
         JButton nextBtn = new JButton("Next");
         JButton previousBtn = new JButton("Previous");
@@ -130,23 +136,36 @@ public class GUIBuilder {
 
         // set listeners
         updateMPDBtn.addActionListener(new CommandListener("update"));
-        updateServers.addActionListener(new ServerListener());
+        updateServers.addActionListener(new ServerListener()); // TODO: spinner while updating
         stopBtn.addActionListener(new CommandListener("stop"));
         nextBtn.addActionListener(new CommandListener("next"));
         previousBtn.addActionListener(new CommandListener("previous"));
         tree.addTreeSelectionListener(new AddToPlaylistListener(table));
         tree.addTreeExpansionListener(new GetAlbumListener(tree));
-        table.getSelectionModel().addListSelectionListener(new PlayTrackListener(table)); 
-        
+        table.getSelectionModel().addListSelectionListener(new PlayTrackListener(table));
+
         // wrap up
         window.setLayout(new GridBagLayout());
-        addPart(window, topPanel, 1, 0, 1, 1, 0.7, 0.7 );
-        addPart(window, tableContainer, 1, 1, 1, 1, 0.7, 0.3 );
-        addPart(window, artistContainer, 0, 1, 1, 2, 0.3, 1.0 );
-        addPart(window, controlPanel, 1, 2, 1, 2, 0.3, 1.0 );
+        addPart(window, topPanel, 1, 0, 1, 1, 0.7, 0.7);
+        addPart(window, tableContainer, 1, 1, 1, 1, 0.7, 0.3);
+        addPart(window, artistContainer, 0, 1, 1, 2, 0.3, 1.0);
+        addPart(window, controlPanel, 1, 2, 1, 2, 0.3, 1.0);
         window.pack();
-        window.setVisible(true); 
+        window.setVisible(true);
         findServers();
+    }
+
+    public void showAlbumImage() {
+        BufferedImage cover = null;
+        try {
+            cover = ImageIO.read(new File("cover.jpg"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (cover != null) {
+            JLabel albumPic = new JLabel(new ImageIcon(cover));
+            addPart(window, albumPic, 0, 2, 1, 2, 0.3, 1.0 );    
+        }
     }
 
     private void findServers() {

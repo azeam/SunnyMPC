@@ -1,7 +1,9 @@
 package SunnyMPC;
 
+import java.io.BufferedReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
@@ -29,20 +31,28 @@ public class ServerScan {
                 }
                 for (NetworkInterface netint : Collections.list(nets)) {
                     try {
-                        String ip = displayInterfaceInformation(netint);
+                        String ip = getLANRange(netint);
                         if (ip.length() > 1) {
                             for (int ipEnd = 1; ipEnd <= 255; ipEnd++) {
                                 try {
                                 Socket socket = new Socket();
                                 socket.connect(new InetSocketAddress(ip + ipEnd, 6600), 100);
+                                String fromServer;
+                                BufferedReader serverResponse = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                                try {
+                                    if ((fromServer = serverResponse.readLine()) != null && fromServer.startsWith("OK MPD")) {
+                                        System.out.println("MPD server at " + ip + ipEnd + " found");
+                                        serversList.add(ip + ipEnd);
+                                    }
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                                 socket.close();
-                                System.out.println("IP " + ip + ipEnd + " is open");
-                                serversList.add(ip + ipEnd);
                             } catch (Exception e) {}
                             }
                         }
-                    } catch (SocketException e1) {
-                        e1.printStackTrace();
+                    } catch (SocketException e) {
+                        e.printStackTrace();
                     }
                 }
                 String[] servers = serversList.toArray(new String[0]);
@@ -68,6 +78,9 @@ public class ServerScan {
                         GUIBuilder guiBuilder = new GUIBuilder();
                         guiBuilder.fillServers(servers);
                     }
+                    else {
+                        // TODO: show no servers found
+                    }
                 }  
                 catch (InterruptedException e) { 
                     e.printStackTrace(); 
@@ -77,15 +90,14 @@ public class ServerScan {
                 } 
             } 
         };
-         
     sw.execute();  
     } 
 
-    private static String displayInterfaceInformation(NetworkInterface netint) throws SocketException {
+    private static String getLANRange(NetworkInterface netint) throws SocketException {
         String ip = "";
         Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
         for (InetAddress inetAddress : Collections.list(inetAddresses)) {
-            // only add ipv4 and skip localhost ip range
+            // only check ipv4 and skip localhost ip range
             if (!inetAddress.toString().contains(":") && !inetAddress.toString().startsWith("/127")) {
                 ip = inetAddress.toString().split("/")[1];
                 String[] parts = ip.split("\\."); // escape dot or java will treat it as regex
