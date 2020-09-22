@@ -36,7 +36,7 @@ public class ServerScan {
                             for (int ipEnd = 1; ipEnd <= 255; ipEnd++) {
                                 try {
                                 Socket socket = new Socket();
-                                socket.connect(new InetSocketAddress(ip + ipEnd, 6600), 100);
+                                socket.connect(new InetSocketAddress(ip + ipEnd, Communicate.port), 50);
                                 String fromServer;
                                 BufferedReader serverResponse = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                                 try {

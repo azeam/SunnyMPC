@@ -3,7 +3,6 @@ package SunnyMPC.listeners;
 
 import java.util.List;
 
-import javax.swing.ImageIcon;
 import javax.swing.JTree;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;

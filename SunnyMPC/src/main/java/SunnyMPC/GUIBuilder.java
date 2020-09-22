@@ -44,6 +44,7 @@ public class GUIBuilder {
     static List<String> artistList;
     static JScrollPane artistContainer;
     static JFrame window;
+    static JLabel albumPic;
     private GridBagConstraints gbc;
     private String[] headers = { "Title", "Album", "Artist", "Duration" };
     static DefaultMutableTreeNode root = new DefaultMutableTreeNode("artists");
@@ -144,27 +145,33 @@ public class GUIBuilder {
         tree.addTreeExpansionListener(new GetAlbumListener(tree));
         table.getSelectionModel().addListSelectionListener(new PlayTrackListener(table));
 
+        // default album cover
+        albumPic = new JLabel(new ImageIcon("noimage.jpg"));
+
         // wrap up
         window.setLayout(new GridBagLayout());
         addPart(window, topPanel, 1, 0, 1, 1, 0.7, 0.7);
         addPart(window, tableContainer, 1, 1, 1, 1, 0.7, 0.3);
         addPart(window, artistContainer, 0, 1, 1, 2, 0.3, 1.0);
         addPart(window, controlPanel, 1, 2, 1, 2, 0.3, 1.0);
+        addPart(window, albumPic, 0, 2, 1, 2, 0.3, 1.0 );    
         window.pack();
         window.setVisible(true);
         findServers();
     }
 
-    public void showAlbumImage() {
+    public void showAlbumImage(String path) {
+        System.out.println(path);
         BufferedImage cover = null;
         try {
-            cover = ImageIO.read(new File("cover.jpg"));
+            cover = ImageIO.read(new File(path));
         } catch (IOException e) {
             e.printStackTrace();
         }
         if (cover != null) {
-            JLabel albumPic = new JLabel(new ImageIcon(cover));
-            addPart(window, albumPic, 0, 2, 1, 2, 0.3, 1.0 );    
+           
+            ImageIcon coverIcon = new ImageIcon(cover);
+            albumPic.setIcon(coverIcon);
         }
     }
 
@@ -180,9 +187,7 @@ public class GUIBuilder {
               }
             }
             sc.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+        } catch (FileNotFoundException e) {}
 
         String[] servers = serverList.toArray(new String[0]);
         if (servers.length > 0) {

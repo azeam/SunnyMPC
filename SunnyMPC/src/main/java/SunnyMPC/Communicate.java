@@ -13,11 +13,10 @@ public class Communicate {
     private static PrintWriter out;
     private static BufferedReader serverResponse;
     private static Socket socket;
-    private static final int port = 6600;
+    public static final int port = 6600;
     public static String ip;
 
-    public static List<String> sendCmd(String cmd) {
-        connect();
+    public static List<String> getStatus(String cmd) {
         List<String> response = new ArrayList<String>();
         String fromServer;
         if (out == null) {return response;}
@@ -33,13 +32,15 @@ public class Communicate {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Socket was closed");
         }
-        try {
-            socket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        return response;
+    }
+
+    public static List<String> sendCmd(String cmd) {
+        connect();
+        List<String> response = getStatus(cmd);
+        disconnect();
         return response;
     }
 
@@ -55,4 +56,12 @@ public class Communicate {
             System.err.println("Couldn't get I/O for the connection to " + ip);
         }
     }
+
+	public static void disconnect() {
+        try {
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+	}
 }

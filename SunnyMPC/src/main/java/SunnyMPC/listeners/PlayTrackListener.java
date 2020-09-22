@@ -8,6 +8,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import javax.swing.JTable;
@@ -20,10 +21,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import SunnyMPC.Communicate;
+import SunnyMPC.GUIBuilder;
 
 public class PlayTrackListener implements ListSelectionListener {
     JTable table;
     private String mbalbumId = "";
+    boolean run = true;
 
     public PlayTrackListener(JTable table) {
         this.table = table;
@@ -34,26 +37,45 @@ public class PlayTrackListener implements ListSelectionListener {
         // get value from hidden id column
         // check if row exists because removing column when updating data will trigger
         // valuechanged, causing IOB
+        run = false;
         int i = table.getSelectedRow();
         if (i >= 0 && !arg0.getValueIsAdjusting()) {
-            Communicate.sendCmd("playid " + table.getModel().getValueAt(table.getSelectedRow(), 0).toString());
+            String id = table.getModel().getValueAt(table.getSelectedRow(), 0).toString();
             mbalbumId = table.getModel().getValueAt(table.getSelectedRow(), 1).toString();
+
+            Communicate.sendCmd("playid " + id);
             String path = mbalbumId + ".jpg";
             File checkFile = new File(path);
             if (mbalbumId.length() > 0 && !checkFile.exists()) {
                 getCover("https://coverartarchive.org/release/" + mbalbumId);
             }
             else if (mbalbumId.length() > 0 && checkFile.exists()) {
-                updateCover(path);
+                GUIBuilder guiBuilder = new GUIBuilder();
+                guiBuilder.showAlbumImage(path);
             }
-        // TODO: start another worker that updates play time
+            getTrackInfo(id);
         }
-
     }
 
-    private void updateCover(String path) {
-        // TODO: update cover...
-        System.out.println("update cover");
+    // TODO: check if song changes, then update cover
+    private void getTrackInfo(String id) {
+        SwingWorker<String, String> sw = new SwingWorker<String, String>() {
+			@Override
+			protected String doInBackground() throws Exception {
+                Thread.sleep(1000); // this will ensure that run in not set to true while sleeping in while loop (causing it not to stop and several loops running when changing track)
+                run = true;
+                Communicate.connect();
+                List<String> status = Communicate.getStatus("status");
+                while (status.contains("state: play") && run) {
+                    status = Communicate.getStatus("status");
+                    System.out.println(status);
+                    Thread.sleep(1000);
+                }
+                Communicate.disconnect();
+                return id;
+			}
+        };
+        sw.execute();
     }
 
     private String getCover(String url) {
@@ -85,9 +107,9 @@ public class PlayTrackListener implements ListSelectionListener {
                     JsonArray images = (JsonArray) obj.get("images").getAsJsonArray();
                     JsonObject image = images.get(0).getAsJsonObject();
                     JsonObject thumbnails = image.get("thumbnails").getAsJsonObject();
-                    String large = thumbnails.get("large").getAsString();
+                    String small = thumbnails.get("small").getAsString();
 
-                    try (InputStream in = new URL(large).openStream()) {
+                    try (InputStream in = new URL(small).openStream()) {
                         String path = mbalbumId + ".jpg";
                         Files.copy(in, Paths.get(path));
                         return path;
@@ -101,14 +123,20 @@ public class PlayTrackListener implements ListSelectionListener {
                 try {
                     String path = get();
                     if (path.equals(mbalbumId + ".jpg")) {
-                        updateCover(path);
+                        GUIBuilder guiBuilder = new GUIBuilder();
+                        guiBuilder.showAlbumImage(path);
                     }
-                }  
+                } 
                 catch (InterruptedException e) { 
                     e.printStackTrace(); 
                 }  
                 catch (ExecutionException e) { 
-                    e.printStackTrace(); 
+                    if (e.getMessage().startsWith("java.io.FileNotFoundException")) {
+                        System.out.println("No cover available");
+                    }
+                    else {
+                        e.printStackTrace();
+                    } 
                 } 
             } 
         };
