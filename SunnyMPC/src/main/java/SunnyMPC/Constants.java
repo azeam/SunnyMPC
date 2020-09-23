@@ -19,6 +19,7 @@ public class Constants {
                             servers = "servers.txt",
                             okMpd = "OK MPD",
                             ok = "OK",
+                            reset = "reset",
                             ack = "ACK",
                             playlistInfo = "playlistinfo",
                             listartists = "list albumartist";

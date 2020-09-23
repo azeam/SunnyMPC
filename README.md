@@ -21,7 +21,9 @@ If no servers have previously been found (the first time you start the applicati
 
 In the tree view on your left you will see the available artists, if you double click an artist or click the arrow next to it a list of their albums will expand. When you click an album it will be added to the playlist (right side). If you click an item in the playlist the file will start playing and the playlist will continue descending. While the file is playing the album cover art will be downloaded (unless it already exists) and displayed below, together with some information about the file being played.  
 
-The top right buttons are rather self-explanatory: click "Stop" to stop the music, "Next"/"Previous" to move to the next/previous track in the playlist. You can also clear the playlist.
+The playlist can be sorted by clicking on the header of the playlist (Artist, Title etc.). This will not affect the order of the playlist, to show the order of the playlist again (after sorting) you can click on the "Reset order" button.
+
+The other top right buttons are rather self-explanatory: click "Stop" to stop the music, "Next"/"Previous" to move to the next/previous track in the playlist. You can also clear the playlist.
 
 ## Slutprojekt Programmering i Java EVXJUH20
 

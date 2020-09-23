@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
@@ -24,7 +25,7 @@ public class TrackInfo {
     public static boolean run;
     public static String mbalbumId;
 
-    public static void getTrackInfo() {
+    public static void getTrackInfo(JTable table) {
         Helper helper = new Helper();
         Communicate com = new Communicate();
 
@@ -43,6 +44,16 @@ public class TrackInfo {
                 Track track = builder.getTrack();
                 mbalbumId = track.getMbalbumId();
                 String path = mbalbumId + ".jpg";
+                int id = track.getId();
+
+                // search table for id being played and mark it
+                for (int i = 0; i < table.getRowCount(); i++){
+                    // convert to real index and check if it matches the id
+                    if (table.getModel().getValueAt(table.convertRowIndexToModel(i), 0).equals(id)) {                        
+                        table.setRowSelectionInterval(i, i);
+                    }
+                }
+
                 File checkFile = new File(path);
                 if (mbalbumId.length() > 0 && !checkFile.exists()) {
                     getCover(Constants.coverBaseUrl + mbalbumId);
@@ -58,7 +69,7 @@ public class TrackInfo {
                     if (!current.equals(checkCurrent)) {
                         builder = new TrackBuilder(checkCurrent);
                         track = builder.getTrack();
-                        getTrackInfo();
+                        getTrackInfo(table);
                         run = false;
                     } else {
                         // TODO: clean up and check for invalid values

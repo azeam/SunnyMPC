@@ -4,6 +4,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.List;
 
+import javax.swing.JTable;
 import javax.swing.SwingWorker;
 
 import SunnyMPC.Communicate;
@@ -15,6 +16,11 @@ import SunnyMPC.TrackInfo;
 
 public class ServerChangeListener implements ItemListener {
    GUIBuilder gui = new GUIBuilder();
+   JTable table;
+
+   public ServerChangeListener(JTable table) {
+      this.table = table;
+   }
 
    @Override
    public void itemStateChanged(ItemEvent arg0) {
@@ -41,7 +47,7 @@ public class ServerChangeListener implements ItemListener {
 
          @Override
          protected void done() {
-               TrackInfo.getTrackInfo();
+               TrackInfo.getTrackInfo(table);
                DisplayTable.displayTable();
             }
          };

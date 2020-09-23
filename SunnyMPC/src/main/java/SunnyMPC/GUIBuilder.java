@@ -27,6 +27,7 @@ import javax.swing.JTextPane;
 import javax.swing.JTree;
 import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
@@ -62,7 +63,7 @@ public class GUIBuilder {
         for (String server : servers) {
             serverCombobox.addItem(server);
         }
-        serverCombobox.addItemListener(new ServerChangeListener());
+        serverCombobox.addItemListener(new ServerChangeListener(table));
     }
 
     // (re-)populate left pane with artist
@@ -116,6 +117,8 @@ public class GUIBuilder {
         table = new JTable(rows, headers);
         JScrollPane tableContainer = new JScrollPane(table);
         table.setFillsViewportHeight(true);
+        table.setAutoCreateRowSorter(true); 
+        // TODO: enable re-ordering the playlist, probably by setting mpd "pos" from row count
 
         // artist list
         tree = new JTree(root);
@@ -129,6 +132,7 @@ public class GUIBuilder {
         JButton stopBtn = new JButton("Stop");
         JButton nextBtn = new JButton("Next");
         JButton previousBtn = new JButton("Previous");
+        JButton resetBtn = new JButton("Reset sort");
 
         // button padding
         clearBtn.setMargin(new Insets(5, 10, 5, 10));
@@ -137,13 +141,18 @@ public class GUIBuilder {
         previousBtn.setMargin(new Insets(5, 10, 5, 10));
         updateMPDBtn.setMargin(new Insets(5, 10, 5, 10));
         updateServers.setMargin(new Insets(5, 10, 5, 10));
-
+        resetBtn.setMargin(new Insets(5, 10, 5, 10));
+        
+        // button container
         Box controlBox = Box.createHorizontalBox();
         controlBox.add(clearBtn);
         controlBox.add(previousBtn);
         controlBox.add(stopBtn);
         controlBox.add(nextBtn);
+        controlBox.add(resetBtn);
         controlPanel.add(controlBox);
+
+        // track info
         trackInfoText = new JTextPane();
         trackInfoText.setContentType("text/html");
         trackInfoText.setOpaque(false);
@@ -155,16 +164,18 @@ public class GUIBuilder {
         trackInfoText.setMaximumSize(textDimension);
 
         // set listeners
-        clearBtn.addActionListener(new CommandListener(Constants.clear));
-        updateMPDBtn.addActionListener(new CommandListener(Constants.update));
+        clearBtn.addActionListener(new CommandListener(Constants.clear, table));
+        updateMPDBtn.addActionListener(new CommandListener(Constants.update, table));
         updateServers.addActionListener(new ServerListener()); // TODO: spinner while updating
-        stopBtn.addActionListener(new CommandListener(Constants.stop));
-        nextBtn.addActionListener(new CommandListener(Constants.next));
-        previousBtn.addActionListener(new CommandListener(Constants.previous));
+        stopBtn.addActionListener(new CommandListener(Constants.stop, table));
+        nextBtn.addActionListener(new CommandListener(Constants.next, table));
+        resetBtn.addActionListener(new CommandListener(Constants.reset, table));
+        previousBtn.addActionListener(new CommandListener(Constants.previous, table));
         tree.addTreeSelectionListener(new AddToPlaylistListener(table));
         tree.addTreeExpansionListener(new GetAlbumListener(tree));
-        table.getSelectionModel().addListSelectionListener(new PlayTrackListener(table));
-
+        table.addMouseListener(new PlayTrackListener(table));
+            
+      
         // default album cover
         JPanel imageContainer = new JPanel();
         albumPic = new Shadow(new ImageIcon());
