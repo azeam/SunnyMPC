@@ -23,7 +23,8 @@ public class PlayTrackListener implements ListSelectionListener {
         int i = table.getSelectedRow();
         if (i >= 0 && !arg0.getValueIsAdjusting()) {
             String id = table.getModel().getValueAt(table.getSelectedRow(), 0).toString();
-            Communicate.sendCmd(Constants.playId + id);
+            Communicate com = new Communicate();
+            com.sendCmd(Constants.playId + id);
             // stop the track info fetcher
             TrackInfo.run = false;
             TrackInfo.getTrackInfo();

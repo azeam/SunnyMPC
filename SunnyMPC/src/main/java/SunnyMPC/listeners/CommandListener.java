@@ -19,7 +19,8 @@ public class CommandListener implements ActionListener {
 
 	@Override
     public void actionPerformed(ActionEvent ae) {
-        Communicate.sendCmd(cmd);     
+        Communicate com = new Communicate();
+        com.sendCmd(cmd);     
         // update track data when going back/forward and send it to the track info handler for display
         if (cmd.equals(Constants.next) || cmd.equals(Constants.previous)) {
             TrackInfo.run = false;

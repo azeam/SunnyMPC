@@ -33,7 +33,6 @@ public class ServerChangeListener implements ItemListener {
       SwingWorker<Boolean, Boolean> sw = new SwingWorker<Boolean, Boolean>() {
          @Override
          protected Boolean doInBackground() throws Exception {
-            Thread.sleep(Constants.sleeptime);
             Helper helper = new Helper();
             List<String> artistStringList = helper.cleanupList(Constants.listartists);
             gui.fillAlbumList(artistStringList);
@@ -43,11 +42,6 @@ public class ServerChangeListener implements ItemListener {
          @Override
          protected void done() {
                TrackInfo.getTrackInfo();
-               try {
-                  Thread.sleep(Constants.sleeptime);
-               } catch (InterruptedException e) {
-                  e.printStackTrace();
-               }
                DisplayTable.displayTable();
             }
          };

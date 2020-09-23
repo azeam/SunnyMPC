@@ -18,8 +18,9 @@ public class DisplayTable {
             @Override
             protected List<Object[]> doInBackground() throws Exception {
                 Helper helper = new Helper();
+                Communicate com = new Communicate();
                 List<String> rowData = new ArrayList<String>();
-                List<String> playlist = Communicate.sendCmd(Constants.playlistInfo);
+                List<String> playlist = com.sendCmd(Constants.playlistInfo);
                 TrackBuilder builder = new TrackBuilder(playlist);
                 rowData = builder.getTracks();
                 

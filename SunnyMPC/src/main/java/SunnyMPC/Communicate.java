@@ -10,13 +10,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Communicate {
-    private static PrintWriter out;
-    private static BufferedReader serverResponse;
-    private static Socket socket;
+    private PrintWriter out;
+    private BufferedReader serverResponse;
+    private Socket socket;
     public static String ip;
 
     // get status, will keep the connection alive, used for long polling the current track information
-    public static List<String> getStatus(String cmd) {
+    public List<String> getStatus(String cmd) {
         List<String> response = new ArrayList<String>();
         String fromServer;
         if (out == null) {return response;}
@@ -38,7 +38,7 @@ public class Communicate {
     }
 
     // send simple command, this will connect and disconnect from the socket
-    public static List<String> sendCmd(String cmd) {
+    public List<String> sendCmd(String cmd) {
         connect();
         List<String> response = getStatus(cmd);
         disconnect();
@@ -48,7 +48,7 @@ public class Communicate {
     // connect to socket
     // TODO: either get a proper stable connection working, MPD kicks me out despite heartbeats for some reason
     // or make non-static connection object, it should prevent some half-bugs
-    public static void connect() {
+    public void connect() {
         try {    
             socket = new Socket(ip, Constants.port);
             out = new PrintWriter(socket.getOutputStream(), true);
@@ -61,7 +61,7 @@ public class Communicate {
     }
 
     // disconnect from socket
-	public static void disconnect() {
+	public void disconnect() {
         try {
             socket.close();
         } catch (IOException e) {

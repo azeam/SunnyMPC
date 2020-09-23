@@ -22,7 +22,8 @@ public class Helper {
 
     // remove title for each row
     public List<String> cleanupList(String cmd) {
-        List<String> serverList = Communicate.sendCmd(cmd);
+        Communicate com = new Communicate();
+        List<String> serverList = com.sendCmd(cmd);
         List<String> list = new ArrayList<String>();
         for (String row : serverList) {
             list.add(row.substring(row.indexOf(" ") + 1));

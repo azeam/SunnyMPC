@@ -26,6 +26,7 @@ public class TrackInfo {
 
     public static void getTrackInfo() {
         Helper helper = new Helper();
+        Communicate com = new Communicate();
 
         SwingWorker<Integer, String> sw = new SwingWorker<Integer, String>() {
             @Override
@@ -33,9 +34,9 @@ public class TrackInfo {
                 Thread.sleep(Constants.sleeptime * 2); // this will ensure that run is not set to true while sleeping in while loop
                                     // (causing it not to stop and several loops running when changing track)
                 run = true;
-                Communicate.connect();
-                List<String> status = Communicate.getStatus(Constants.status);
-                List<String> current = Communicate.getStatus(Constants.currentSong);
+                com.connect();
+                List<String> status = com.getStatus(Constants.status);
+                List<String> current = com.getStatus(Constants.currentSong);
                 List<String> checkCurrent = new ArrayList<String>();
 
                 TrackBuilder builder = new TrackBuilder(current);
@@ -51,7 +52,7 @@ public class TrackInfo {
                 }
 
                 while (status.contains("state: play") && run) {
-                    checkCurrent = Communicate.getStatus(Constants.currentSong);
+                    checkCurrent = com.getStatus(Constants.currentSong);
                     // if song ends and new song starts, build new track object and restart worker
                     // to get new info
                     if (!current.equals(checkCurrent)) {
@@ -61,7 +62,8 @@ public class TrackInfo {
                         run = false;
                     } else {
                         // TODO: clean up and check for invalid values
-                        status = Communicate.getStatus(Constants.status);
+                        status = com.getStatus(Constants.status);
+                        String[] aAudio = new String[3];
                         String elapsed = "";
                         String audio = "";
                         String bitrate = "";
@@ -79,21 +81,24 @@ public class TrackInfo {
 
                         // need to call invokeAndWait to avoid flickering when updating text, the strings below are 
                         // required to be re-set to make them final for the run method
-                        String[] aAudio = audio.split(":");
-                        GUIBuilder guiBuilder = new GUIBuilder();
+                        aAudio = audio.split(":");
+                        String freq = aAudio[0];
+                        String bit = aAudio[1];
+                        String channels = aAudio[2];
                         String artist = track.getArtist();
                         String title = track.getTitle();
                         String el = elapsed;
                         String dur = helper.getMinutes(track.getTime());
-                        String bit = bitrate;
+                        String bitr = bitrate;
+                        GUIBuilder guiBuilder = new GUIBuilder();
                         try {
                             SwingUtilities.invokeAndWait(new Runnable() {
                                 public void run() {
                                     guiBuilder.setTrackText("<html><center><font size=5><b>" + 
                                     title + "</b><br>" + artist + "<br></font><font size=4>" + 
                                     el + " of " + dur + "<br><br>" + 
-                                    aAudio[0] + " Hz " + aAudio[1] + " bit " + aAudio[2] + " channels<br>Bitrate " + 
-                                    bit + " kbps</font></center></html>");
+                                    freq + " Hz " + bit + " bit " + channels + " channels<br>Bitrate " + 
+                                    bitr + " kbps</font></center></html>");
                                 }
                             });
                         } catch (InvocationTargetException | InterruptedException e) {
@@ -103,7 +108,7 @@ public class TrackInfo {
                     }
                     Thread.sleep(Constants.sleeptime);
                 }
-                Communicate.disconnect();
+                com.disconnect();
                 return 0;
             }
         };

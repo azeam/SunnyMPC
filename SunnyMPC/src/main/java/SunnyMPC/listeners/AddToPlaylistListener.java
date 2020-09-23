@@ -27,9 +27,10 @@ public class AddToPlaylistListener implements TreeSelectionListener {
         // when clicking an album, get the artist/album name and add to playlist
         if (albumNode != null && albumNode.isLeaf()) {
             Helper helper = new Helper();
+            Communicate com = new Communicate();
             String selectedAlbum = albumNode.toString();
             String selectedArtist = artistNode.toString();
-            Communicate.sendCmd(Constants.findAddArtist + helper.escapeString(selectedArtist) + Constants.albumSpace + helper.escapeString(selectedAlbum));
+            com.sendCmd(Constants.findAddArtist + helper.escapeString(selectedArtist) + Constants.albumSpace + helper.escapeString(selectedAlbum));
             DisplayTable.displayTable();
         }
     }
