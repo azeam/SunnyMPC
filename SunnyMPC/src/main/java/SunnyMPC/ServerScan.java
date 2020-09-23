@@ -40,7 +40,7 @@ public class ServerScan {
                                 try {
                                 Socket socket = new Socket();
                                 // connect to each IP address on port 6600 and confirm the "MPD OK" response, if so add to list
-                                socket.connect(new InetSocketAddress(ip + ipEnd, Constants.port), 50);
+                                socket.connect(new InetSocketAddress(ip + ipEnd, Constants.port), 100); // 100 ms seems enough on my network
                                 String fromServer;
                                 BufferedReader serverResponse = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                                 try {

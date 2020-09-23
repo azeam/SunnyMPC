@@ -21,6 +21,7 @@ public class ServerChangeListener implements ItemListener {
       // get and display info from server when changing server
       if (arg0.getStateChange() == ItemEvent.SELECTED) {
          TrackInfo.run = false;
+         
          Communicate.ip = arg0.getItem().toString();
          gui.showAlbumImage(Constants.noImage);
          gui.setTrackText("");
@@ -32,8 +33,6 @@ public class ServerChangeListener implements ItemListener {
       SwingWorker<Boolean, Boolean> sw = new SwingWorker<Boolean, Boolean>() {
          @Override
          protected Boolean doInBackground() throws Exception {
-            // prevent some interference between commands by sleeping a little while before getting new data...
-            // TODO: this would likely be better prevented if properly setting up a non static socket
             Thread.sleep(Constants.sleeptime);
             Helper helper = new Helper();
             List<String> artistStringList = helper.cleanupList(Constants.listartists);
@@ -44,6 +43,11 @@ public class ServerChangeListener implements ItemListener {
          @Override
          protected void done() {
                TrackInfo.getTrackInfo();
+               try {
+                  Thread.sleep(Constants.sleeptime);
+               } catch (InterruptedException e) {
+                  e.printStackTrace();
+               }
                DisplayTable.displayTable();
             }
          };

@@ -92,16 +92,14 @@ public class TrackInfo {
                                     guiBuilder.setTrackText("<html><center><font size=5><b>" + 
                                     title + "</b><br>" + artist + "<br></font><font size=4>" + 
                                     el + " of " + dur + "<br><br>" + 
-                                    aAudio[0] + " Hz " + aAudio[1] + " bit " + aAudio[2] + " channels.<br>Bitrate " + bit
-                                    + " kbps</font></center></html>");
+                                    aAudio[0] + " Hz " + aAudio[1] + " bit " + aAudio[2] + " channels<br>Bitrate " + 
+                                    bit + " kbps</font></center></html>");
                                 }
                             });
                         } catch (InvocationTargetException | InterruptedException e) {
                             e.printStackTrace();
                         }
-                        
-
-                        
+  
                     }
                     Thread.sleep(Constants.sleeptime);
                 }
