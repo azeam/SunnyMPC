@@ -2,7 +2,7 @@
 
 Very basic Java (Swing) MPD client with limited functionality. Written as a small class assignment (see below).
 
-![Sunny MPC](https://www.bufonaturvard.se/images/sunnympc.png)
+![Sunny MPC](https://www.bufonaturvard.se/images/sunnympc2.png)
 
 ## Features and limitations  
 

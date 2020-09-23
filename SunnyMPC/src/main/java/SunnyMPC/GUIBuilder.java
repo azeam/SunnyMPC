@@ -30,6 +30,9 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
+import org.jdesktop.swingx.JXLabel;
+import org.jdesktop.swingx.border.DropShadowBorder;
+
 import SunnyMPC.listeners.AddToPlaylistListener;
 import SunnyMPC.listeners.CommandListener;
 import SunnyMPC.listeners.GetAlbumListener;
@@ -163,20 +166,37 @@ public class GUIBuilder {
         table.getSelectionModel().addListSelectionListener(new PlayTrackListener(table));
 
         // default album cover
-        albumPic = new JLabel(new ImageIcon(Constants.noImage));
+        JPanel imageContainer = new JPanel();
+        albumPic = new Shadow(new ImageIcon());
+        showAlbumImage(Constants.noImage);
+        albumPic.setAlignmentX(Shadow.CENTER_ALIGNMENT);
+        imageContainer.add(albumPic);
 
         // wrap up
         window.setLayout(new GridBagLayout());
-        addPart(window, topPanel, 0, 0, 1, 1, 0.7, 0.7);
-        addPart(window, tableContainer, 1, 1, 1, 1, 0.7, 0.3);
-        addPart(window, artistContainer, 0, 1, 1, 2, 0.3, 1.0);
+        addPart(window, topPanel, 0, 0, 1, 1, 0, 0);
+        addPart(window, tableContainer, 1, 1, 3, 1, 1, 0.3);
+        addPart(window, artistContainer, 0, 1, 1, 1, 0, 0);
         addPart(window, controlPanel, 1, 0, 1, 2, 0.3, 1.0);
-        addPart(window, albumPic, 0, 2, 1, 2, 0.3, 1.0);
-        addPart(window, trackInfoText, 1, 2, 1, 2, 0.3, 1.0);
+        addPart(window, imageContainer, 0, 2, 1, 0, 0, 0);
+        addPart(window, trackInfoText, 1, 2, 1, 0, 0, 0);
         window.pack();
-        window.setSize(new Dimension(1000, 800));
+        window.setSize(new Dimension(1000, 900));
         window.setVisible(true);
         findServers();
+    }
+
+    private class Shadow extends JXLabel{
+        private static final long serialVersionUID = -3042310413725411334L;
+
+        public Shadow(ImageIcon icon) {
+            DropShadowBorder shadow = new DropShadowBorder();
+            shadow.setShowLeftShadow(false);
+            shadow.setShowRightShadow(true);
+            shadow.setShowBottomShadow(true);
+            shadow.setShowTopShadow(false);
+            this.setBorder(shadow);
+        }
     }
 
     // update cover image
@@ -188,7 +208,6 @@ public class GUIBuilder {
             e.printStackTrace();
         }
         if (cover != null) {
-
             ImageIcon coverIcon = new ImageIcon(cover);
             albumPic.setIcon(coverIcon);
         }
