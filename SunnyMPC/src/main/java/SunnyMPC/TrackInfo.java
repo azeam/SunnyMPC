@@ -28,8 +28,6 @@ public class TrackInfo {
     public static void getTrackInfo(JTable table) {
         Helper helper = new Helper();
         Communicate com = new Communicate();
-        GUIBuilder guiBuilder = new GUIBuilder();
-        guiBuilder.showAlbumImage(Constants.noImage);
 
         SwingWorker<Integer, String> sw = new SwingWorker<Integer, String>() {
             @Override
@@ -173,11 +171,14 @@ public class TrackInfo {
 
             @Override
             protected void done() {
+                GUIBuilder guiBuilder = new GUIBuilder();
                 try {
                     String path = get();
                     if (path.equals(mbalbumId + ".jpg")) {
-                        GUIBuilder guiBuilder = new GUIBuilder();
                         guiBuilder.showAlbumImage(path);
+                    }
+                    else {
+                        guiBuilder.showAlbumImage(Constants.noImage);
                     }
                 } 
                 catch (InterruptedException e) { 
@@ -185,7 +186,8 @@ public class TrackInfo {
                 }  
                 catch (ExecutionException e) { 
                     if (e.getMessage().startsWith("java.io.FileNotFoundException")) {
-                        System.out.println("No cover available");
+                        System.out.println("No cover available");                        
+                        guiBuilder.showAlbumImage(Constants.noImage);
                     }
                     else {
                         e.printStackTrace();
