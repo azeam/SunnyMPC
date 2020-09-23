@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 import com.google.gson.Gson;
@@ -34,10 +36,10 @@ public class TrackInfo {
                 Communicate.connect();
                 List<String> status = Communicate.getStatus(Constants.status);
                 List<String> current = Communicate.getStatus(Constants.currentSong);
-                TrackBuilder builder = new TrackBuilder(current);
-                Track track = builder.getTrack();
                 List<String> checkCurrent = new ArrayList<String>();
 
+                TrackBuilder builder = new TrackBuilder(current);
+                Track track = builder.getTrack();
                 mbalbumId = track.getMbalbumId();
                 String path = mbalbumId + ".jpg";
                 File checkFile = new File(path);
@@ -74,11 +76,32 @@ public class TrackInfo {
                                 bitrate = row.substring(row.indexOf(" ") + 1);
                             }
                         }
+
+                        // need to call invokeAndWait to avoid flickering when updating text, the strings below are 
+                        // required to be re-set to make them final for the run method
                         String[] aAudio = audio.split(":");
                         GUIBuilder guiBuilder = new GUIBuilder();
-                        guiBuilder.setTrackText(track.getArtist() + " - " + track.getTitle() + "\n" + elapsed + " of "
-                                + helper.getMinutes(track.getTime()) + "\n" + aAudio[0] + " Hz " + aAudio[1] + " bit "
-                                + aAudio[2] + " channels. Bitrate " + bitrate + " kbps");
+                        String artist = track.getArtist();
+                        String title = track.getTitle();
+                        String el = elapsed;
+                        String dur = helper.getMinutes(track.getTime());
+                        String bit = bitrate;
+                        try {
+                            SwingUtilities.invokeAndWait(new Runnable() {
+                                public void run() {
+                                    guiBuilder.setTrackText("<html><center><font size=5 color=white><b>" + 
+                                    title + "</b><br>" + artist + "<br><br></font><font size=4 color=white>" + 
+                                    el + " of " + dur + "<br><br>" + 
+                                    aAudio[0] + " Hz " + aAudio[1] + " bit " + aAudio[2] + " channels. Bitrate " + bit
+                                    + " kbps</font></center></html>");
+                                }
+                            });
+                        } catch (InvocationTargetException | InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        
+
+                        
                     }
                     Thread.sleep(Constants.sleeptime);
                 }
@@ -89,7 +112,7 @@ public class TrackInfo {
         sw.execute();
     }
 
-    public static String getCover(String url) {
+    protected static String getCover(String url) {
         SwingWorker<String, String> sw = new SwingWorker<String, String>() {
 
             @Override
@@ -117,11 +140,12 @@ public class TrackInfo {
                     }
                     Gson gson = new Gson();
                     JsonObject obj = gson.fromJson(sb.toString(), JsonObject.class);
+                    
+                    // get the url for the 250px image
                     JsonArray images = (JsonArray) obj.get("images").getAsJsonArray();
-                    JsonObject image = images.get(0).getAsJsonObject();
-                    JsonObject thumbnails = image.get("thumbnails").getAsJsonObject();
-                    String small = thumbnails.get("small").getAsString();
+                    String small = images.get(0).getAsJsonObject().get("thumbnails").getAsJsonObject().get("small").getAsString();
 
+                    // download and save image
                     try (InputStream in = new URL(small).openStream()) {
                         String path = mbalbumId + ".jpg";
                         Files.copy(in, Paths.get(path));

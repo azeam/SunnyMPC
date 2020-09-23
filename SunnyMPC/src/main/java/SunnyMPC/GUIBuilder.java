@@ -1,5 +1,9 @@
 package SunnyMPC;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -7,11 +11,13 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -23,8 +29,11 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
+import javax.swing.border.Border;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -46,7 +55,7 @@ public class GUIBuilder {
     static JScrollPane artistContainer;
     static JFrame window;
     static JLabel albumPic;
-    static JTextArea trackInfoText;
+    static JTextPane trackInfoText;
     private GridBagConstraints gbc;
     private String[] headers = { "Title", "Album", "Artist", "Duration" };
     static DefaultMutableTreeNode root = new DefaultMutableTreeNode("artists");
@@ -122,14 +131,29 @@ public class GUIBuilder {
         JButton stopBtn = new JButton("Stop");
         JButton nextBtn = new JButton("Next");
         JButton previousBtn = new JButton("Previous");
+
+        // button padding
+        clearBtn.setMargin(new Insets(5, 10, 5, 10));
+        stopBtn.setMargin(new Insets(5, 10, 5, 10));
+        nextBtn.setMargin(new Insets(5, 10, 5, 10));
+        previousBtn.setMargin(new Insets(5, 10, 5, 10));
+        updateMPDBtn.setMargin(new Insets(5, 10, 5, 10));
+        updateServers.setMargin(new Insets(5, 10, 5, 10));
+
         Box controlBox = Box.createHorizontalBox();
         controlBox.add(clearBtn);
+        controlBox.add(previousBtn);
         controlBox.add(stopBtn);
         controlBox.add(nextBtn);
-        controlBox.add(previousBtn);
         controlPanel.add(controlBox);
-        trackInfoText = new JTextArea(5, 20);
+        trackInfoText = new JTextPane();
+        trackInfoText.setContentType("text/html");
+        trackInfoText.setOpaque(false);
         trackInfoText.setEditable(false);
+        Dimension textDimension = new Dimension(300, 50);
+        trackInfoText.setMinimumSize(textDimension);
+        trackInfoText.setPreferredSize(textDimension);
+        trackInfoText.setMaximumSize(textDimension);
 
         // set listeners
         clearBtn.addActionListener(new CommandListener(Constants.clear));
@@ -147,13 +171,14 @@ public class GUIBuilder {
 
         // wrap up
         window.setLayout(new GridBagLayout());
-        addPart(window, topPanel, 1, 0, 1, 1, 0.7, 0.7);
+        addPart(window, topPanel, 0, 0, 1, 1, 0.7, 0.7);
         addPart(window, tableContainer, 1, 1, 1, 1, 0.7, 0.3);
         addPart(window, artistContainer, 0, 1, 1, 2, 0.3, 1.0);
-        addPart(window, controlPanel, 1, 2, 1, 2, 0.3, 1.0);
-        addPart(window, albumPic, 0, 2, 1, 2, 0.3, 1.0 );  
-        addPart(window, trackInfoText, 1, 4, 1, 2, 0.3, 1.0 );   
+        addPart(window, controlPanel, 1, 0, 1, 2, 0.3, 1.0);
+        addPart(window, albumPic, 0, 2, 1, 2, 0.3, 1.0);
+        addPart(window, trackInfoText, 1, 2, 1, 2, 0.3, 1.0);
         window.pack();
+        window.setSize(new Dimension(1000, 800));
         window.setVisible(true);
         findServers();
     }
@@ -166,14 +191,16 @@ public class GUIBuilder {
             e.printStackTrace();
         }
         if (cover != null) {
-           
+
             ImageIcon coverIcon = new ImageIcon(cover);
             albumPic.setIcon(coverIcon);
         }
     }
 
     public void setTrackText(String info) {
+       
         trackInfoText.setText(info);
+              
     }
 
     private void findServers() {

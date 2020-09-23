@@ -29,6 +29,8 @@ public class CommandListener implements ActionListener {
             DisplayTable.displayTable();
         }
         else if (cmd.equals(Constants.stop)) {
+            TrackInfo.run = false;
+            guiBuilder.showAlbumImage(Constants.noImage);
             guiBuilder.setTrackText("");
         }
     }

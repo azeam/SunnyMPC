@@ -2,6 +2,8 @@
 
 Very basic Java (Swing) MPD client with limited functionality. Written as a small class assignment (see below).
 
+![Sunny MPC](https://www.bufonaturvard.se/images/sunnympc.png)
+
 ## Features and limitations  
 
 - Browse and play music files on local or external MPD servers.    
