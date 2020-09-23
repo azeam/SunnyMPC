@@ -1,9 +1,6 @@
 package SunnyMPC;
 
-import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -11,13 +8,11 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 import javax.imageio.ImageIO;
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -28,12 +23,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.JTree;
-import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
-import javax.swing.border.Border;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -60,6 +52,7 @@ public class GUIBuilder {
     private String[] headers = { "Title", "Album", "Artist", "Duration" };
     static DefaultMutableTreeNode root = new DefaultMutableTreeNode("artists");
 
+    // (re-)populate server list
     public void fillServers(String[] servers) {
         serverCombobox.removeAllItems();
         serverCombobox.addItem("");
@@ -69,6 +62,7 @@ public class GUIBuilder {
         serverCombobox.addItemListener(new ServerChangeListener());
     }
 
+    // (re-)populate left pane with artist
     public void fillAlbumList(List<String> artistStringList) {
         root.removeAllChildren();
         for (String artist : artistStringList) {
@@ -82,6 +76,7 @@ public class GUIBuilder {
         model.reload();
     }
 
+    // populate table with data
     public void setTableData(List<Object[]> rowData) {
         tableModel.addColumn("id", rowData.get(0));
         tableModel.addColumn("mbAlbum", rowData.get(1)); // TODO: I think this can be removed now
@@ -90,7 +85,7 @@ public class GUIBuilder {
         tableModel.addColumn(headers[2], rowData.get(4));
         tableModel.addColumn(headers[3], rowData.get(5));
         table.setModel(tableModel);
-        table.removeColumn(table.getColumnModel().getColumn(0)); // hide id column
+        table.removeColumn(table.getColumnModel().getColumn(0)); // hide id column, no need to display, used for sending playid cmd
         table.removeColumn(table.getColumnModel().getColumn(0)); // hide musicbrainz album id column
     }
 
@@ -150,6 +145,7 @@ public class GUIBuilder {
         trackInfoText.setContentType("text/html");
         trackInfoText.setOpaque(false);
         trackInfoText.setEditable(false);
+        // set fixed dimension to prevent resizing when text width changes (every bitrate/second update)
         Dimension textDimension = new Dimension(300, 50);
         trackInfoText.setMinimumSize(textDimension);
         trackInfoText.setPreferredSize(textDimension);
@@ -183,6 +179,7 @@ public class GUIBuilder {
         findServers();
     }
 
+    // update cover image
     public void showAlbumImage(String path) {
         BufferedImage cover = null;
         try {
@@ -197,12 +194,12 @@ public class GUIBuilder {
         }
     }
 
+    // update text with current track info
     public void setTrackText(String info) {
-       
         trackInfoText.setText(info);
-              
     }
 
+    // check if servers are saved, otherwise search for them
     private void findServers() {
         List<String> serverList = new ArrayList<String>();
         try {
@@ -236,6 +233,7 @@ public class GUIBuilder {
         }
     };
 
+    // set size etc. of each gui element
     private void addPart(JFrame window, JComponent comp, int x, int y, int gWidth, int gHeight, double weightx, double weighty) {
         gbc.gridx = x;
         gbc.gridy = y;

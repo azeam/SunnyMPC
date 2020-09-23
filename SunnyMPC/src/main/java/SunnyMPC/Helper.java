@@ -8,6 +8,7 @@ import java.util.List;
 public class Helper {
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 
+    // show playtime in minutes:seconds
     public String getMinutes(int time) {
         return LocalTime.MIN.plusSeconds(time).format(formatter).toString();
     }

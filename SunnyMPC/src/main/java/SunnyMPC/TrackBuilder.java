@@ -18,6 +18,7 @@ public class TrackBuilder {
         return tracks;
     }
 
+    // set data for track object
     public TrackBuilder(List<String> list) {
         track = new Track();
         for (String row : list) {

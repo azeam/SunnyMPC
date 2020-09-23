@@ -30,6 +30,7 @@ public class DisplayTable {
                 String[] times = new String[rowData.size()];
                 String[] mbAlbums = new String[rowData.size()];
 
+                // re-build java object from json data
                 Gson gson = new Gson();
                 int i = 0;
                 for (String s : rowData) {    
@@ -42,6 +43,8 @@ public class DisplayTable {
                     mbAlbums[i] = track.getMbalbumId();
                     i++;
                 }
+
+                // make list with arrays instead of passing every array
                 List<Object[]> data = new ArrayList<Object[]>();
                 data.add(ids);
                 data.add(mbAlbums);
@@ -57,6 +60,7 @@ public class DisplayTable {
                 try { 
                     List<Object[]> rowData = get();
                     if (rowData.size() > 0) {
+                        // pass array list to builder for table display
                         GUIBuilder guiBuilder = new GUIBuilder();
                         guiBuilder.setTableData(rowData);
                     }
