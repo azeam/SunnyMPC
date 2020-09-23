@@ -28,6 +28,8 @@ public class TrackInfo {
     public static void getTrackInfo(JTable table) {
         Helper helper = new Helper();
         Communicate com = new Communicate();
+        GUIBuilder guiBuilder = new GUIBuilder();
+        guiBuilder.showAlbumImage(Constants.noImage);
 
         SwingWorker<Integer, String> sw = new SwingWorker<Integer, String>() {
             @Override

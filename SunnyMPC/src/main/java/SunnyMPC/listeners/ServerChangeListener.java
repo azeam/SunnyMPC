@@ -29,7 +29,6 @@ public class ServerChangeListener implements ItemListener {
          TrackInfo.run = false;
          
          Communicate.ip = arg0.getItem().toString();
-         gui.showAlbumImage(Constants.noImage);
          gui.setTrackText("");
          getServerData();
       }
