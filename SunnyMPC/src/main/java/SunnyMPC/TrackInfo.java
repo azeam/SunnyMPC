@@ -89,10 +89,10 @@ public class TrackInfo {
                         try {
                             SwingUtilities.invokeAndWait(new Runnable() {
                                 public void run() {
-                                    guiBuilder.setTrackText("<html><center><font size=5 color=white><b>" + 
-                                    title + "</b><br>" + artist + "<br><br></font><font size=4 color=white>" + 
+                                    guiBuilder.setTrackText("<html><center><font size=5><b>" + 
+                                    title + "</b><br>" + artist + "<br></font><font size=4>" + 
                                     el + " of " + dur + "<br><br>" + 
-                                    aAudio[0] + " Hz " + aAudio[1] + " bit " + aAudio[2] + " channels. Bitrate " + bit
+                                    aAudio[0] + " Hz " + aAudio[1] + " bit " + aAudio[2] + " channels.<br>Bitrate " + bit
                                     + " kbps</font></center></html>");
                                 }
                             });
