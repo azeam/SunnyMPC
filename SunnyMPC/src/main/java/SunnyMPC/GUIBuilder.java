@@ -1,7 +1,6 @@
 package SunnyMPC;
 
 import java.awt.Dimension;
-import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -14,7 +13,6 @@ import java.util.List;
 import java.util.Scanner;
 
 import javax.imageio.ImageIO;
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -38,7 +36,6 @@ import javax.swing.tree.DefaultTreeModel;
 import org.jdesktop.swingx.JXLabel;
 import org.jdesktop.swingx.JXTree;
 import org.jdesktop.swingx.border.DropShadowBorder;
-import org.jdesktop.swingx.painter.Painter;
 import org.jdesktop.swingx.prompt.PromptSupport;
 
 import SunnyMPC.listeners.AddToPlaylistListener;
@@ -187,7 +184,7 @@ public class GUIBuilder {
         textContainer.setLayout(new BoxLayout(textContainer, BoxLayout.Y_AXIS));
         textContainer.add(trackInfoText);
 
-        // progress progress
+        // progress bar
         JPanel pbContainer = new JPanel();
         progressBar = new JProgressBar();
         progressBar.setMinimum(0);
