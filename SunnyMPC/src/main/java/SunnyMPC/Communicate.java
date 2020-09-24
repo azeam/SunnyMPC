@@ -46,8 +46,6 @@ public class Communicate {
     }
 
     // connect to socket
-    // TODO: either get a proper stable connection working, MPD kicks me out despite heartbeats for some reason
-    // or make non-static connection object, it should prevent some half-bugs
     public void connect() {
         try {    
             socket = new Socket(ip, Constants.port);

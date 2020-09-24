@@ -1,6 +1,7 @@
 package SunnyMPC;
 
 import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Scanner;
 
 import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -25,21 +27,25 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.JTextPane;
-import javax.swing.JTree;
+import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableRowSorter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
 import org.jdesktop.swingx.JXLabel;
+import org.jdesktop.swingx.JXTree;
 import org.jdesktop.swingx.border.DropShadowBorder;
+import org.jdesktop.swingx.painter.Painter;
+import org.jdesktop.swingx.prompt.PromptSupport;
 
 import SunnyMPC.listeners.AddToPlaylistListener;
 import SunnyMPC.listeners.CommandListener;
 import SunnyMPC.listeners.GetAlbumListener;
 import SunnyMPC.listeners.PlayTrackListener;
+import SunnyMPC.listeners.SearchListener;
 import SunnyMPC.listeners.ServerChangeListener;
 import SunnyMPC.listeners.ServerListener;
 
@@ -47,7 +53,7 @@ public class GUIBuilder {
     private final int hGap = 5;
     private final int vGap = 5;
     static JTable table;
-    static JTree tree;
+    static JXTree tree;
     static JComboBox<String> serverCombobox;
     static List<String> artistList;
     static JScrollPane artistContainer;
@@ -60,7 +66,7 @@ public class GUIBuilder {
     private String[] headers = { "Title", "Album", "Artist", "Duration" };
     static DefaultMutableTreeNode root = new DefaultMutableTreeNode("artists");
 
-    // set progress bar 
+    // set progress bar
     public void setProgress(int percentage) {
         progressBar.setValue(percentage);
     }
@@ -93,7 +99,8 @@ public class GUIBuilder {
         tableModel.addColumn(headers[2], rowData.get(4));
         tableModel.addColumn(headers[3], rowData.get(5));
         table.setModel(tableModel);
-        table.removeColumn(table.getColumnModel().getColumn(0)); // hide id column, no need to display, used for sending playid cmd
+        table.removeColumn(table.getColumnModel().getColumn(0)); // hide id column, no need to display, used for sending
+                                                                 // playid cmd
         table.removeColumn(table.getColumnModel().getColumn(0)); // hide musicbrainz album id column
     }
 
@@ -121,14 +128,23 @@ public class GUIBuilder {
         table = new JTable(rows, headers);
         JScrollPane tableContainer = new JScrollPane(table);
         table.setFillsViewportHeight(true);
-        table.setAutoCreateRowSorter(true); 
+        table.setAutoCreateRowSorter(true);
         // TODO: enable re-ordering the playlist, probably by setting mpd "pos" from row count
 
         // artist list
-        tree = new JTree(root);
+        tree = new JXTree(root);
         tree.expandRow(0);
         tree.setRootVisible(false); // hide root node
         artistContainer = new JScrollPane(tree);
+        // artist search
+        Box artistAndSearchContainer = Box.createVerticalBox();
+        JTextField search = new JTextField(15);
+        search.setMaximumSize(new Dimension(5000, 10));
+        PromptSupport.setPrompt("Search", search);
+        // need to re-set the bg color because of some buggy stuff going on with prompt support (will repaint when typing)
+        search.setBackground(UIManager.getColor("Tree.background"));
+        artistAndSearchContainer.add(search);
+        artistAndSearchContainer.add(artistContainer);
 
         // bottom row
         JPanel controlPanel = new JPanel();
@@ -182,7 +198,7 @@ public class GUIBuilder {
         // set listeners
         clearBtn.addActionListener(new CommandListener(Constants.clear, table));
         updateMPDBtn.addActionListener(new CommandListener(Constants.update, table));
-        updateServers.addActionListener(new ServerListener(serverCombobox, updateServers)); // TODO: spinner while updating
+        updateServers.addActionListener(new ServerListener(serverCombobox, updateServers));
         stopBtn.addActionListener(new CommandListener(Constants.stop, table));
         nextBtn.addActionListener(new CommandListener(Constants.next, table));
         resetBtn.addActionListener(new CommandListener(Constants.reset, table));
@@ -191,6 +207,7 @@ public class GUIBuilder {
         tree.addTreeExpansionListener(new GetAlbumListener(tree));
         table.addMouseListener(new PlayTrackListener(table));
         serverCombobox.addItemListener(new ServerChangeListener(table));
+        search.addActionListener(new SearchListener(tree));
       
         // default album cover
         JPanel imageContainer = new JPanel();
@@ -207,7 +224,7 @@ public class GUIBuilder {
         window.setLayout(new GridBagLayout());
         addPart(window, topPanel, 0, 0, 1, 1, 0, 0);
         addPart(window, tableContainer, 1, 1, 3, 1, 1, 0.3);
-        addPart(window, artistContainer, 0, 1, 1, 3, 0, 0);
+        addPart(window, artistAndSearchContainer, 0, 1, 1, 3, 0, 0);
         addPart(window, controlPanel, 1, 0, 1, 2, 0.3, 1.0);
  //   addPart(window, imageContainer, 0, 2, 1, 0, 0, 0);
         addPart(window, infoBox, 1, 2, 1, 0, 0, 0);

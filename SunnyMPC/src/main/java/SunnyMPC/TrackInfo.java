@@ -72,7 +72,6 @@ public class TrackInfo {
                         getTrackInfo(table);
                         run = false;
                     } else {
-                        // TODO: clean up and check for invalid values
                         status = com.getStatus(Constants.status);
                         String[] aAudio = new String[3];
                         String elapsed = "";
