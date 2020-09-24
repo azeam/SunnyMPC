@@ -55,6 +55,7 @@ public class GUIBuilder {
     static JLabel albumPic;
     static JTextPane trackInfoText;
     static JProgressBar progressBar;
+    static JButton updateServers;
     private GridBagConstraints gbc;
     private String[] headers = { "Title", "Album", "Artist", "Duration" };
     static DefaultMutableTreeNode root = new DefaultMutableTreeNode("artists");
@@ -65,13 +66,8 @@ public class GUIBuilder {
     }
 
     // (re-)populate server list
-    public void fillServers(String[] servers) {
-        serverCombobox.removeAllItems();
-        serverCombobox.addItem("");
-        for (String server : servers) {
-            serverCombobox.addItem(server);
-        }
-        serverCombobox.addItemListener(new ServerChangeListener(table));
+    public void fillServers(String server) {
+        serverCombobox.addItem(server);
     }
 
     // (re-)populate left pane with artist
@@ -112,8 +108,8 @@ public class GUIBuilder {
         // top row
         JPanel topPanel = new JPanel();
         serverCombobox = new JComboBox<String>();
-        JButton updateMPDBtn = new JButton("Update MPD");
-        JButton updateServers = new JButton("Update servers");
+        JButton updateMPDBtn = new JButton("Update database");
+        updateServers = new JButton("Find servers");
         Box topBox = Box.createHorizontalBox();
         topBox.add(updateMPDBtn);
         topBox.add(serverCombobox);
@@ -186,7 +182,7 @@ public class GUIBuilder {
         // set listeners
         clearBtn.addActionListener(new CommandListener(Constants.clear, table));
         updateMPDBtn.addActionListener(new CommandListener(Constants.update, table));
-        updateServers.addActionListener(new ServerListener()); // TODO: spinner while updating
+        updateServers.addActionListener(new ServerListener(serverCombobox, updateServers)); // TODO: spinner while updating
         stopBtn.addActionListener(new CommandListener(Constants.stop, table));
         nextBtn.addActionListener(new CommandListener(Constants.next, table));
         resetBtn.addActionListener(new CommandListener(Constants.reset, table));
@@ -194,6 +190,7 @@ public class GUIBuilder {
         tree.addTreeSelectionListener(new AddToPlaylistListener(table));
         tree.addTreeExpansionListener(new GetAlbumListener(tree));
         table.addMouseListener(new PlayTrackListener(table));
+        serverCombobox.addItemListener(new ServerChangeListener(table));
       
         // default album cover
         JPanel imageContainer = new JPanel();
@@ -267,12 +264,13 @@ public class GUIBuilder {
             sc.close();
         } catch (FileNotFoundException e) {}
 
-        String[] servers = serverList.toArray(new String[0]);
-        if (servers.length > 0) {
-            fillServers(servers);    
+        if (serverList.size() > 0) {
+            for (String server : serverList) {
+                fillServers(server);
+            }                    
         } else {
             System.out.println("No servers saved, auto-starting search");
-            ServerScan.startThread();
+            ServerScan.startThread(updateServers);
         }     
     }
 

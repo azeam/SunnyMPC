@@ -44,6 +44,7 @@ public class CommandListener implements ActionListener {
             TrackInfo.run = false;
             guiBuilder.showAlbumImage(Constants.noImage);
             guiBuilder.setTrackText("");
+            guiBuilder.setProgress(0);
         }
         else if (cmd.equals(Constants.reset)) {
             TableRowSorter<TableModel> sorter = new TableRowSorter<>(table.getModel());

@@ -15,11 +15,15 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import javax.swing.JButton;
 import javax.swing.SwingWorker;
 
 public class ServerScan {
-    public static void startThread() { 
-        SwingWorker<String[], String[]> sw = new SwingWorker<String[], String[]>() { 
+    public static void startThread(JButton updateServers) { 
+        GUIBuilder guiBuilder = new GUIBuilder();
+        updateServers.setText("Searching...");
+        updateServers.setEnabled(false);
+        SwingWorker<String[], String> sw = new SwingWorker<String[], String>() { 
             @Override
             protected String[] doInBackground() throws Exception { 
                 List<String> serversList = new ArrayList<String>();
@@ -47,6 +51,7 @@ public class ServerScan {
                                     if ((fromServer = serverResponse.readLine()) != null && fromServer.startsWith(Constants.okMpd)) {
                                         System.out.println("MPD server at " + ip + ipEnd + " found");
                                         serversList.add(ip + ipEnd);
+                                        publish(ip + ipEnd);
                                     }
                                 } catch (IOException e) {
                                     e.printStackTrace();
@@ -61,6 +66,13 @@ public class ServerScan {
                 }
                 String[] servers = serversList.toArray(new String[0]);
                 return servers;
+            }
+
+            @Override
+            protected void process(List<String> chunks) {
+                for (String server : chunks) {
+                    guiBuilder.fillServers(server);
+                }
             }
 
             @Override
@@ -79,8 +91,7 @@ public class ServerScan {
                             System.out.println("An error occurred.");
                             e.printStackTrace();
                           }
-                        GUIBuilder guiBuilder = new GUIBuilder();
-                        guiBuilder.fillServers(servers);
+                       
                     }
                     else {
                         // TODO: show no servers found
@@ -92,6 +103,8 @@ public class ServerScan {
                 catch (ExecutionException e) { 
                     e.printStackTrace(); 
                 } 
+                updateServers.setText("Find servers");
+                updateServers.setEnabled(true);
             } 
         };
     sw.execute();  
