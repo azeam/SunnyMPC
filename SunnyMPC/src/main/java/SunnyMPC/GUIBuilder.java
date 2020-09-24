@@ -14,6 +14,7 @@ import java.util.Scanner;
 
 import javax.imageio.ImageIO;
 import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -21,6 +22,7 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextPane;
@@ -52,9 +54,15 @@ public class GUIBuilder {
     static JFrame window;
     static JLabel albumPic;
     static JTextPane trackInfoText;
+    static JProgressBar progressBar;
     private GridBagConstraints gbc;
     private String[] headers = { "Title", "Album", "Artist", "Duration" };
     static DefaultMutableTreeNode root = new DefaultMutableTreeNode("artists");
+
+    // set progress bar 
+    public void setProgress(int percentage) {
+        progressBar.setValue(percentage);
+    }
 
     // (re-)populate server list
     public void fillServers(String[] servers) {
@@ -152,16 +160,28 @@ public class GUIBuilder {
         controlBox.add(resetBtn);
         controlPanel.add(controlBox);
 
+        // TODO: fix text container height when word wrapping
         // track info
+        JPanel textContainer = new JPanel();
         trackInfoText = new JTextPane();
         trackInfoText.setContentType("text/html");
         trackInfoText.setOpaque(false);
         trackInfoText.setEditable(false);
         // set fixed dimension to prevent resizing when text width changes (every bitrate/second update)
-        Dimension textDimension = new Dimension(300, 50);
+        Dimension textDimension = new Dimension(400, 150);
         trackInfoText.setMinimumSize(textDimension);
         trackInfoText.setPreferredSize(textDimension);
         trackInfoText.setMaximumSize(textDimension);
+        textContainer.setLayout(new BoxLayout(textContainer, BoxLayout.Y_AXIS));
+        textContainer.add(trackInfoText);
+
+        // progress progress
+        JPanel pbContainer = new JPanel();
+        progressBar = new JProgressBar();
+        progressBar.setMinimum(0);
+        progressBar.setMaximum(100);
+        pbContainer.add(progressBar);
+        textContainer.add(pbContainer);
 
         // set listeners
         clearBtn.addActionListener(new CommandListener(Constants.clear, table));
@@ -174,25 +194,28 @@ public class GUIBuilder {
         tree.addTreeSelectionListener(new AddToPlaylistListener(table));
         tree.addTreeExpansionListener(new GetAlbumListener(tree));
         table.addMouseListener(new PlayTrackListener(table));
-            
       
         // default album cover
         JPanel imageContainer = new JPanel();
         albumPic = new Shadow(new ImageIcon());
         showAlbumImage(Constants.noImage);
-        albumPic.setAlignmentX(Shadow.CENTER_ALIGNMENT);
         imageContainer.add(albumPic);
+
+        // cover + text container
+        JPanel infoBox = new JPanel();
+        infoBox.add(imageContainer);
+        infoBox.add(textContainer);
 
         // wrap up
         window.setLayout(new GridBagLayout());
         addPart(window, topPanel, 0, 0, 1, 1, 0, 0);
         addPart(window, tableContainer, 1, 1, 3, 1, 1, 0.3);
-        addPart(window, artistContainer, 0, 1, 1, 1, 0, 0);
+        addPart(window, artistContainer, 0, 1, 1, 3, 0, 0);
         addPart(window, controlPanel, 1, 0, 1, 2, 0.3, 1.0);
-        addPart(window, imageContainer, 0, 2, 1, 0, 0, 0);
-        addPart(window, trackInfoText, 1, 2, 1, 0, 0, 0);
+ //   addPart(window, imageContainer, 0, 2, 1, 0, 0, 0);
+        addPart(window, infoBox, 1, 2, 1, 0, 0, 0);
         window.pack();
-        window.setSize(new Dimension(1000, 900));
+        window.setSize(new Dimension(1300, 900));
         window.setVisible(true);
         findServers();
     }
@@ -274,5 +297,7 @@ public class GUIBuilder {
         gbc.weighty = weighty;      
         window.add(comp, gbc);
     }
+
+	
   
 }

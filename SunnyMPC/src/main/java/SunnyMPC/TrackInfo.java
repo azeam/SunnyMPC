@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.InvocationTargetException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
@@ -14,7 +13,6 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import javax.swing.JTable;
-import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 import com.google.gson.Gson;
@@ -28,8 +26,10 @@ public class TrackInfo {
     public static void getTrackInfo(JTable table) {
         Helper helper = new Helper();
         Communicate com = new Communicate();
+        GUIBuilder guiBuilder = new GUIBuilder();
+        guiBuilder.setProgress(0);
 
-        SwingWorker<Integer, String> sw = new SwingWorker<Integer, String>() {
+        SwingWorker<Integer, Object> sw = new SwingWorker<Integer, Object>() {
             @Override
             protected Integer doInBackground() throws Exception {
                 Thread.sleep(Constants.sleeptime * 2); // this will ensure that run is not set to true while sleeping in while loop
@@ -78,9 +78,10 @@ public class TrackInfo {
                         String elapsed = "";
                         String audio = "";
                         String bitrate = "";
+                        Double dElapsed = 0.0;
                         for (String row : status) {
                             if (row.startsWith("elapsed:")) {
-                                Double dElapsed = Double.parseDouble(row.substring(row.indexOf(" ") + 1));
+                                dElapsed = Double.parseDouble(row.substring(row.indexOf(" ") + 1));
                                 int iElapsed = (int) Math.floor(dElapsed);
                                 elapsed = helper.getMinutes(iElapsed);
                             } else if (row.startsWith("audio:")) {
@@ -90,38 +91,35 @@ public class TrackInfo {
                             }
                         }
 
-                        // need to call invokeAndWait to avoid flickering when updating text, the strings below are 
-                        // required to be re-set to make them final for the run method
+                        // build html and pass to processer
                         aAudio = audio.split(":");
-                        String freq = aAudio[0];
-                        String bit = aAudio[1];
-                        String channels = aAudio[2];
-                        String artist = track.getArtist();
-                        String title = track.getTitle();
-                        String el = elapsed;
-                        String dur = helper.getMinutes(track.getTime());
-                        String bitr = bitrate;
-                        GUIBuilder guiBuilder = new GUIBuilder();
-                        try {
-                            SwingUtilities.invokeAndWait(new Runnable() {
-                                public void run() {
-                                    guiBuilder.setTrackText("<html><center><font size=5><b>" + 
-                                    title + "</b><br>" + artist + "<br></font><font size=4>" + 
-                                    el + " of " + dur + "<br><br>" + 
-                                    freq + " Hz " + bit + " bit " + channels + " channels<br>Bitrate " + 
-                                    bitr + " kbps</font></center></html>");
-                                }
-                            });
-                        } catch (InvocationTargetException | InterruptedException e) {
-                            e.printStackTrace();
-                        }
-  
+                        String html = "<html><center><font size=5><b>" + 
+                        track.getTitle() + "</b><br><br>" + track.getArtist() + "<br></font><font size=4>" + 
+                        aAudio[0] + " Hz, " + aAudio[1] + " bit, " + aAudio[2] + " channels<br>Bitrate " + 
+                        bitrate + " kbps<br><br>" + 
+                        elapsed + " / " + helper.getMinutes(track.getTime()) + "</font></center></html>";
+                        publish(html);
+                        int percentage = (int) (Math.floor(dElapsed / Double.valueOf(track.getTime()) * 100));
+                        publish(percentage);
                     }
                     Thread.sleep(Constants.sleeptime);
                 }
                 com.disconnect();
                 return 0;
             }
+
+            @Override
+            protected void process(List<Object> chunks) {
+                for (Object obj : chunks) {
+                    if (obj.getClass() == Integer.class) {
+                        guiBuilder.setProgress((int) obj);
+                    }
+                    else if (obj.getClass() == String.class) {
+                        guiBuilder.setTrackText((String) obj);
+                    }
+                }
+            }
+
         };
         sw.execute();
     }
@@ -168,6 +166,8 @@ public class TrackInfo {
                 }
                 return url;
             }
+
+            
 
             @Override
             protected void done() {
