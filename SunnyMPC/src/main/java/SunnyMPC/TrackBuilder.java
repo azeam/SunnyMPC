@@ -21,8 +21,10 @@ public class TrackBuilder {
     // set data for track object
     public TrackBuilder(List<String> list) {
         track = new Track();
+        int i = 0;
         for (String row : list) {
-            if (row.startsWith("file:")) {
+                if (row.startsWith("file:")) {
+                
                 // for table, split list (make new track object) on new file line
                 track = new Track();
             }
@@ -53,15 +55,20 @@ public class TrackBuilder {
             else if (row.startsWith("Id: ")) {
                 track.setId(Integer.parseInt(row.substring(row.indexOf(" ") + 1)));
                 // write json data for table handling
+
+                // TODO: where to do this? last row can be "Id: " for list or "Track: " when searching, but skip the first empty row
                 ObjectMapper mapper = new ObjectMapper();
                 String jsonString = "";
                 try {
                     jsonString = mapper.writeValueAsString(track);
-                    tracks.add(jsonString);
+                    if (i > 0) {
+                        tracks.add(jsonString);
+                    }
                 } catch (JsonProcessingException e) {
                     e.printStackTrace();
                 }
             }
+            i++;
         }
 	}
 }

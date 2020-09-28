@@ -3,6 +3,7 @@ package SunnyMPC.listeners;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import javax.swing.JTable;
 import javax.swing.SwingWorker;
@@ -27,25 +28,31 @@ public class ServerChangeListener implements ItemListener {
       // get and display info from server when changing server
       if (arg0.getStateChange() == ItemEvent.SELECTED) {
          TrackInfo.run = false;
-         
+
          Communicate.ip = arg0.getItem().toString();
+         gui.showAlbumImage(Constants.noImage);
          gui.setTrackText("");
          getServerData();
       }
    }
 
    private void getServerData() {
-      SwingWorker<Boolean, Boolean> sw = new SwingWorker<Boolean, Boolean>() {
+      SwingWorker<List<String>, Boolean> sw = new SwingWorker<List<String>, Boolean>() {
          @Override
-         protected Boolean doInBackground() throws Exception {
+         protected List<String> doInBackground() throws Exception {
             Helper helper = new Helper();
             List<String> artistStringList = helper.cleanupList(Constants.listartists);
-            gui.fillAlbumList(artistStringList);
-            return true;            
+            return artistStringList;
          }
 
          @Override
          protected void done() {
+            try {
+               gui.fillAlbumList(get());
+            } catch (InterruptedException | ExecutionException e) {
+               // TODO Auto-generated catch block
+               e.printStackTrace();
+            }
                TrackInfo.getTrackInfo(table);
                DisplayTable.displayTable();
             }

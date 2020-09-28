@@ -21,6 +21,7 @@ public class Constants {
                             ok = "OK",
                             reset = "reset",
                             ack = "ACK",
+                            searchArtist = "search artist ",
                             playlistInfo = "playlistinfo",
                             listartists = "list albumartist";
 }

@@ -39,16 +39,25 @@ public class GetAlbumListener implements TreeExpansionListener {
 
     private void getServerData(DefaultTreeModel model, DefaultMutableTreeNode selectedNode, String artist) {
         SwingWorker<Boolean, Boolean> sw = new SwingWorker<Boolean, Boolean>() { 
-           @Override
-           protected Boolean doInBackground() throws Exception { 
-            Helper helper = new Helper();
-            List<String> albumStringList = helper.cleanupList("list album " + helper.escapeString(artist));
-            for (String album : albumStringList) {
-                DefaultMutableTreeNode leaf = new DefaultMutableTreeNode(album);
-                model.insertNodeInto(leaf, selectedNode, 0);
-            }
+            @Override
+            protected Boolean doInBackground() throws Exception { 
+                Helper helper = new Helper();
+                
+                // get albums by artist
+                List<String> albumStringList = helper.cleanupList("list album " + helper.escapeString(artist));
+                for (String album : albumStringList) {
+                    DefaultMutableTreeNode albumNode = new DefaultMutableTreeNode(album);
+                    model.insertNodeInto(albumNode, selectedNode, 0);
+
+                    // get titles for album (TODO: add using findadd? id not listed)
+                    List<String> trackStringList = helper.cleanupList("list title album " + helper.escapeString(album));
+                    for (String trackString : trackStringList) {
+                        DefaultMutableTreeNode trackNode = new DefaultMutableTreeNode(trackString);
+                        model.insertNodeInto(trackNode, albumNode, 0);
+                    }
+                }
                 return null;
-           }
+            }
         };
         sw.execute();
     }

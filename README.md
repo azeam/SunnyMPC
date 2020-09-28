@@ -1,10 +1,11 @@
 # Sunny MPC
-
-Very basic Java (Swing) MPD client with limited functionality. Written as a small class assignment (see below).
+**Basic Java (Swing) [MPD](https://github.com/MusicPlayerDaemon/MPD) client**
 
 ![Sunny MPC](https://www.bufonaturvard.se/images/sunnympc3.png)
 
 ## Features and limitations  
+
+Very basic Java (Swing) MPD client with limited functionality. Written as a small class assignment (see below).
 
 - Browse and play music files on local or external MPD servers.    
 - Automatic album cover fetching.  
@@ -12,7 +13,7 @@ Very basic Java (Swing) MPD client with limited functionality. Written as a smal
 - Basic playlist management.  
 
 In it's current early state it is rather ugly, does not support password protected or manually entered servers. There is no advanced handling of playlists. No search function. All album cover pictures are stored in the application root folder etc. It is working but will probably not be a good experience for daily usage as of now.
-
+ 
 ## Usage  
 
 Install and set up MPD. This is a fairly straightforward process that I won't go in to details about, see [musicpd.org](https://www.musicpd.org/doc/html/index.html).

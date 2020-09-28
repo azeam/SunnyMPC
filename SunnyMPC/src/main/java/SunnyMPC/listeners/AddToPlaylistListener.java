@@ -18,22 +18,55 @@ public class AddToPlaylistListener implements TreeSelectionListener {
         this.tree = tree;
     }
 
+
+    // TODO: worker class
+    // TODO: findadd track
+    // TODO: add artist
+    // TODO: only add on explicit selection with a menu, not when clicking the item
+    // TODO: use worker class for search as well
+
 	@Override
     public void valueChanged(TreeSelectionEvent arg0) {
+        Helper helper = new Helper();
+        Communicate com = new Communicate();    
+        DefaultMutableTreeNode artistNode;
+        DefaultMutableTreeNode albumNode;
+        DefaultMutableTreeNode trackNode;
+        String selectedAlbum;
+        String selectedArtist;
+        String selectedTrack;
+
         TreePath selectedPath = arg0.getPath();
-        DefaultMutableTreeNode albumNode = (DefaultMutableTreeNode) selectedPath.getLastPathComponent();
-        DefaultMutableTreeNode artistNode = (DefaultMutableTreeNode) selectedPath.getPathComponent(1);
-
-        // when clicking an album, get the artist/album name and add to playlist
-        if (albumNode != null && albumNode.isLeaf()) {
-            Helper helper = new Helper();
-            Communicate com = new Communicate();
-            String selectedAlbum = albumNode.toString();
-            String selectedArtist = artistNode.toString();
-            com.sendCmd(Constants.findAddArtist + helper.escapeString(selectedArtist) + Constants.albumSpace + helper.escapeString(selectedAlbum));
-            DisplayTable.displayTable();
+        String[] checkBranch = selectedPath.toString().split(",");
+        int pathPosition = checkBranch.length;
+        switch (pathPosition) {
+            case 2:
+                // artist
+                artistNode = (DefaultMutableTreeNode) selectedPath.getLastPathComponent();       
+                selectedArtist = artistNode.toString();
+                com.sendCmd(Constants.findAddArtist + helper.escapeString(selectedArtist));        
+                break;
+            case 3:
+                //album
+                albumNode = (DefaultMutableTreeNode) selectedPath.getLastPathComponent();       
+                artistNode = (DefaultMutableTreeNode) selectedPath.getPathComponent(1);
+                selectedAlbum = albumNode.toString();
+                selectedArtist = artistNode.toString();
+                com.sendCmd(Constants.findAddArtist + helper.escapeString(selectedArtist) + Constants.albumSpace + helper.escapeString(selectedAlbum));        
+                break;
+            case 4:
+                // track
+                trackNode = (DefaultMutableTreeNode) selectedPath.getLastPathComponent();
+                albumNode = (DefaultMutableTreeNode) selectedPath.getPathComponent(2);        
+                artistNode = (DefaultMutableTreeNode) selectedPath.getPathComponent(1);
+                selectedAlbum = albumNode.toString();
+                selectedArtist = artistNode.toString();
+                selectedTrack = trackNode.toString();
+                // TODO: sets the previous track, probably because of the TrackBuilder first case, fix
+                com.sendCmd(Constants.findAddArtist + helper.escapeString(selectedArtist) + Constants.albumSpace + helper.escapeString(selectedAlbum) + " title " + helper.escapeString(selectedTrack));        
+                break;
         }
+        // when clicking an album, get the artist/album name and add to playlist   
+        DisplayTable.displayTable();
     }
-
-   
 }
