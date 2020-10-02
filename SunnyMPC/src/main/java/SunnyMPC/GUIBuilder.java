@@ -200,7 +200,7 @@ public class GUIBuilder {
         nextBtn.addActionListener(new CommandListener(Constants.next, table));
         resetBtn.addActionListener(new CommandListener(Constants.reset, table));
         previousBtn.addActionListener(new CommandListener(Constants.previous, table));
-        tree.addTreeSelectionListener(new AddToPlaylistListener(table));
+        tree.addMouseListener(new AddToPlaylistListener(tree));
         tree.addTreeExpansionListener(new GetAlbumListener(tree));
         table.addMouseListener(new PlayTrackListener(table));
         serverCombobox.addItemListener(new ServerChangeListener(table));

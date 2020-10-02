@@ -8,6 +8,7 @@ public class Constants {
                             playId = "playid ",
                             findAddArtist = "findadd artist ",
                             albumSpace = " album ",
+                            titleSpace = " title ",
                             next = "next",
                             clear = "clear",
                             previous = "previous",

@@ -1,8 +1,13 @@
 package SunnyMPC.listeners;
 
-import javax.swing.JTable;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.JTree;
+import javax.swing.SwingUtilities;
+import javax.swing.event.MouseInputListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
@@ -11,62 +16,110 @@ import SunnyMPC.Constants;
 import SunnyMPC.DisplayTable;
 import SunnyMPC.Helper;
 
-public class AddToPlaylistListener implements TreeSelectionListener {
-    JTable tree;
+public class AddToPlaylistListener implements MouseInputListener {
+    JTree tree;
+    JPopupMenu popup;
+    JMenuItem addLabelItem;
+    Helper helper = new Helper();
+    Communicate com = new Communicate();
+    DefaultMutableTreeNode artistNode;
+    DefaultMutableTreeNode albumNode;
+    DefaultMutableTreeNode trackNode;
+    String selectedAlbum;
+    String selectedArtist;
+    String selectedTrack;
+    TreePath selectedPath = null;
 
-    public AddToPlaylistListener(JTable tree) {
+    public AddToPlaylistListener(JTree tree) {
         this.tree = tree;
     }
 
-
-    // TODO: worker class
-    // TODO: findadd track
-    // TODO: add artist
-    // TODO: only add on explicit selection with a menu, not when clicking the item
-    // TODO: use worker class for search as well
-
-	@Override
-    public void valueChanged(TreeSelectionEvent arg0) {
-        Helper helper = new Helper();
-        Communicate com = new Communicate();    
-        DefaultMutableTreeNode artistNode;
-        DefaultMutableTreeNode albumNode;
-        DefaultMutableTreeNode trackNode;
-        String selectedAlbum;
-        String selectedArtist;
-        String selectedTrack;
-
-        TreePath selectedPath = arg0.getPath();
-        String[] checkBranch = selectedPath.toString().split(",");
-        int pathPosition = checkBranch.length;
-        switch (pathPosition) {
-            case 2:
-                // artist
-                artistNode = (DefaultMutableTreeNode) selectedPath.getLastPathComponent();       
-                selectedArtist = artistNode.toString();
-                com.sendCmd(Constants.findAddArtist + helper.escapeString(selectedArtist));        
-                break;
-            case 3:
-                //album
-                albumNode = (DefaultMutableTreeNode) selectedPath.getLastPathComponent();       
-                artistNode = (DefaultMutableTreeNode) selectedPath.getPathComponent(1);
-                selectedAlbum = albumNode.toString();
-                selectedArtist = artistNode.toString();
-                com.sendCmd(Constants.findAddArtist + helper.escapeString(selectedArtist) + Constants.albumSpace + helper.escapeString(selectedAlbum));        
-                break;
-            case 4:
-                // track
-                trackNode = (DefaultMutableTreeNode) selectedPath.getLastPathComponent();
-                albumNode = (DefaultMutableTreeNode) selectedPath.getPathComponent(2);        
-                artistNode = (DefaultMutableTreeNode) selectedPath.getPathComponent(1);
-                selectedAlbum = albumNode.toString();
-                selectedArtist = artistNode.toString();
-                selectedTrack = trackNode.toString();
-                // TODO: sets the previous track, probably because of the TrackBuilder first case, fix
-                com.sendCmd(Constants.findAddArtist + helper.escapeString(selectedArtist) + Constants.albumSpace + helper.escapeString(selectedAlbum) + " title " + helper.escapeString(selectedTrack));        
-                break;
+    @Override
+    public void mouseClicked(java.awt.event.MouseEvent e) {
+        // show add menu on right click
+        if (SwingUtilities.isRightMouseButton(e)) {
+            int row = tree.getClosestRowForLocation(e.getX(), e.getY());
+            tree.setSelectionRow(row);
+            checkTreeDepth(e.getX(), e.getY());
         }
-        // when clicking an album, get the artist/album name and add to playlist   
-        DisplayTable.displayTable();
+        // add track on double click
+        else if (e.getClickCount() == 2) {
+            selectedPath = tree.getPathForLocation(e.getX(), e.getY());
+            trackNode = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+            if (selectedPath != null && trackNode.isLeaf()) {
+                addTrack(selectedPath);
+                DisplayTable.displayTable();
+            }
+        }
+    }
+
+    @Override
+    public void mouseEntered(java.awt.event.MouseEvent arg0) {}
+    @Override
+    public void mouseExited(java.awt.event.MouseEvent arg0) {}
+    @Override
+    public void mousePressed(java.awt.event.MouseEvent arg0) {}
+    @Override
+    public void mouseReleased(java.awt.event.MouseEvent e) {}
+    @Override
+    public void mouseDragged(java.awt.event.MouseEvent arg0) {}
+    @Override
+    public void mouseMoved(java.awt.event.MouseEvent arg0) {}
+
+    private void checkTreeDepth(int x, int y) {
+        selectedPath = tree.getPathForLocation(x, y);
+        if (selectedPath == null) {
+            return;
+        }
+
+        String addLabel = "Add " + selectedPath.getLastPathComponent().toString() + " to playlist";
+        popup = new JPopupMenu();
+        addLabelItem = new JMenuItem(addLabel);
+
+        addLabelItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                String[] checkBranch = selectedPath.toString().split(",");
+                int pathPosition = checkBranch.length;
+                switch (pathPosition) {
+                    case 2:
+                        addArtist(selectedPath);
+                        break;
+                    case 3:
+                        addAlbum(selectedPath);
+                        break;
+                    case 4:
+                        addTrack(selectedPath);    
+                        break;
+                }
+                DisplayTable.displayTable();
+            }
+           });  
+        popup.add(addLabelItem);
+        popup.show(tree, x, y);
+    }
+
+    private void addArtist(TreePath selectedPath) {
+        artistNode = (DefaultMutableTreeNode) selectedPath.getLastPathComponent();       
+        selectedArtist = artistNode.toString();
+        com.sendCmd(Constants.findAddArtist + helper.escapeString(selectedArtist));  
+    }
+
+    private void addAlbum(TreePath selectedPath) {
+        albumNode = (DefaultMutableTreeNode) selectedPath.getLastPathComponent();       
+        artistNode = (DefaultMutableTreeNode) selectedPath.getPathComponent(1);
+        selectedAlbum = albumNode.toString();
+        selectedArtist = artistNode.toString();
+        com.sendCmd(Constants.findAddArtist + helper.escapeString(selectedArtist) + Constants.albumSpace + helper.escapeString(selectedAlbum));
+    }
+
+    private void addTrack(TreePath selectedPath) {
+        trackNode = (DefaultMutableTreeNode) selectedPath.getLastPathComponent();
+        albumNode = (DefaultMutableTreeNode) selectedPath.getPathComponent(2);        
+        artistNode = (DefaultMutableTreeNode) selectedPath.getPathComponent(1);
+        selectedAlbum = albumNode.toString();
+        selectedArtist = artistNode.toString();
+        selectedTrack = trackNode.toString();
+        com.sendCmd(Constants.findAddArtist + helper.escapeString(selectedArtist) + Constants.albumSpace + helper.escapeString(selectedAlbum) + Constants.titleSpace + helper.escapeString(selectedTrack));        
     }
 }
