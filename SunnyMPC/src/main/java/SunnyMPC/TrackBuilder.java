@@ -19,7 +19,7 @@ public class TrackBuilder {
     }
 
     // set data for track object
-    public TrackBuilder(List<String> list) {
+    public TrackBuilder(List<String> list, String breakpoint) {
         track = new Track();
         int i = 0;
         for (String row : list) {
@@ -54,9 +54,11 @@ public class TrackBuilder {
             }
             else if (row.startsWith("Id: ")) {
                 track.setId(Integer.parseInt(row.substring(row.indexOf(" ") + 1)));
-                // write json data for table handling
-
+            }
+            
+            if (row.startsWith(breakpoint)) {
                 // TODO: where to do this? last row can be "Id: " for list or "Track: " when searching, but skip the first empty row
+                // write json data for table handling
                 ObjectMapper mapper = new ObjectMapper();
                 String jsonString = "";
                 try {

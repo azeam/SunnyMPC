@@ -40,7 +40,7 @@ public class TrackInfo {
                 List<String> current = com.getStatus(Constants.currentSong);
                 List<String> checkCurrent = new ArrayList<String>();
 
-                TrackBuilder builder = new TrackBuilder(current);
+                TrackBuilder builder = new TrackBuilder(current, "Id: ");
                 Track track = builder.getTrack();
                 mbalbumId = track.getMbalbumId();
                 String path = mbalbumId + ".jpg";
@@ -67,7 +67,7 @@ public class TrackInfo {
                     // if song ends and new song starts, build new track object and restart worker
                     // to get new info
                     if (!current.equals(checkCurrent)) {
-                        builder = new TrackBuilder(checkCurrent);
+                        builder = new TrackBuilder(checkCurrent, "Id: ");
                         track = builder.getTrack();
                         getTrackInfo(table);
                         run = false;

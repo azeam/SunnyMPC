@@ -49,7 +49,7 @@ public class GetAlbumListener implements TreeExpansionListener {
                     DefaultMutableTreeNode albumNode = new DefaultMutableTreeNode(album);
                     model.insertNodeInto(albumNode, selectedNode, 0);
 
-                    // get titles for album (TODO: add using findadd? id not listed)
+                    // get titles for album
                     List<String> trackStringList = helper.cleanupList("list title album " + helper.escapeString(album));
                     for (String trackString : trackStringList) {
                         DefaultMutableTreeNode trackNode = new DefaultMutableTreeNode(trackString);

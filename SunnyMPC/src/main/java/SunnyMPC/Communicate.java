@@ -23,7 +23,7 @@ public class Communicate {
         out.println(cmd);
         try {
             while ((fromServer = serverResponse.readLine()) != null && !fromServer.equals(Constants.ok)) {
-            //    System.out.println(fromServer);
+//          System.out.println(fromServer);
                 if (fromServer.startsWith(Constants.ack)) {
                     break;
                 }

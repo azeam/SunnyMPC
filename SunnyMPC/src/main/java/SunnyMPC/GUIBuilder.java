@@ -204,7 +204,7 @@ public class GUIBuilder {
         tree.addTreeExpansionListener(new GetAlbumListener(tree));
         table.addMouseListener(new PlayTrackListener(table));
         serverCombobox.addItemListener(new ServerChangeListener(table));
-        search.addActionListener(new SearchListener(tree));
+        search.addActionListener(new SearchListener(tree, table));
       
         // default album cover
         JPanel imageContainer = new JPanel();

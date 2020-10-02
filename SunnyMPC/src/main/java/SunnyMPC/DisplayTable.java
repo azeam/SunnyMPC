@@ -21,7 +21,7 @@ public class DisplayTable {
                 Communicate com = new Communicate();
                 List<String> rowData = new ArrayList<String>();
                 List<String> playlist = com.sendCmd(Constants.playlistInfo);
-                TrackBuilder builder = new TrackBuilder(playlist);
+                TrackBuilder builder = new TrackBuilder(playlist, "Id: ");
                 rowData = builder.getTracks();
                 
                 Integer[] ids = new Integer[rowData.size()];
