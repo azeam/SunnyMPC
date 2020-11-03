@@ -45,7 +45,6 @@ public class SearchListener implements ActionListener {
         }
     }
 
-    // TODO: skip all of this and just do a local filtering of the jtree...
     private void getServerData(String searchString) {
         SwingWorker<List<String>, List<String>> sw = new SwingWorker<List<String>, List<String>>() {
             @Override
